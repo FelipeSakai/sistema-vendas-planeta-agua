@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planeta Água - Vendas</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <!-- SweetAlert2 CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/vendas.css">
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <i class="bi bi-droplet-fill fs-4"></i>
+      <h4>Planeta Água</h4>
+    </div>
+    <ul class="nav flex-column mt-4">
+      <li class="nav-item">
+        <a class="nav-link" href="index.html">
+          <i class="bi bi-speedometer2"></i>
+          <span class="nav-text">Dashboard</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link active" href="vendas.html">
+          <i class="bi bi-cash-coin"></i>
+          <span class="nav-text">Vendas</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="clientes.html">
+          <i class="bi bi-people"></i>
+          <span class="nav-text">Clientes</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="produtos.html">
+          <i class="bi bi-box-seam"></i>
+          <span class="nav-text">Produtos</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="../pages/usuarios.html">
+          <i class="bi bi-person-badge"></i>
+          <span class="nav-text">Usuários</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="relatorios.html">
+          <i class="bi bi-bar-chart"></i>
+          <span class="nav-text">Relatórios</span>
+        </a>
+      </li>
+    </ul>
+    <div class="sidebar-footer">
+      <a class="nav-link" href="login.html">
+        <i class="bi bi-box-arrow-left"></i>
+        <span class="nav-text">Sair</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Sidebar Toggle Button -->
+  <button class="sidebar-toggle" id="sidebarToggle">
+    <i class="bi bi-list"></i>
+  </button>
+
+  <!-- Main Content -->
+  <div class="main-content" id="mainContent">
+    <div class="container-fluid">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Cadastro de Vendas</h2>
+        <button class="btn btn-primary d-lg-none" id="mobileMenuBtn">
+          <i class="bi bi-list"></i>
+        </button>
+      </div>
+
+      <div class="row">
+        <!-- Formulário de Venda -->
+        <div class="col-lg-8">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">Dados da Venda</h5>
+            </div>
+            <div class="card-body">
+              <!-- Cliente -->
+              <div class="mb-4">
+                <h6 class="fw-bold mb-2">Cliente</h6>
+                <div id="semClienteSelecionado">
+                  <div class="alert alert-info d-flex align-items-center">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <div>Nenhum cliente selecionado. Selecione um cliente para a venda.</div>
+                  </div>
+                  <button class="btn btn-primary" id="btnSelecionarCliente">
+                    <i class="bi bi-person-plus me-2"></i> Selecionar Cliente
+                  </button>
+                </div>
+                <div id="clienteSelecionado" style="display: none;">
+                  <div class="card border-0 bg-light">
+                    <div class="card-body">
+                      <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold mb-0" id="nomeCliente">Nome do Cliente</h6>
+                        <button class="btn btn-sm btn-outline-primary" id="btnAlterarCliente">
+                          <i class="bi bi-pencil"></i> Alterar
+                        </button>
+                      </div>
+                      <div class="mb-1"><i class="bi bi-telephone me-2"></i> <span id="telefoneCliente">Telefone</span>
+                      </div>
+                      <div><i class="bi bi-geo-alt me-2"></i> <span id="enderecoCliente">Endereço</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Produtos -->
+              <div class="mb-4">
+                <h6 class="fw-bold mb-2">Produtos</h6>
+                <div class="row g-3 mb-3">
+                  <div class="col-md-5">
+                    <label for="produtoSelect" class="form-label">Produto</label>
+                    <select class="form-select" id="produtoSelect">
+                      <option value="" selected disabled>Selecione um produto</option>
+                      <option value="1" data-preco="15.00">Galão 20L</option>
+                      <option value="2" data-preco="2.50">Água Mineral 500ml</option>
+                      <option value="3" data-preco="5.00">Água Mineral 1,5L</option>
+                      <option value="4" data-preco="35.90">Suporte para Galão</option>
+                      <option value="5" data-preco="3.50">Água Mineral com Gás 500ml</option>
+                    </select>
+                  </div>
+                  <div class="col-md-2">
+                    <label for="quantidadeProduto" class="form-label">Quantidade</label>
+                    <input type="number" class="form-control" id="quantidadeProduto" min="1" value="1">
+                  </div>
+                  <div class="col-md-2">
+                    <label for="precoProduto" class="form-label">Preço Unit.</label>
+                    <div class="input-group">
+                      <span class="input-group-text">R$</span>
+                      <input type="number" class="form-control" id="precoProduto" step="0.01" readonly>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <label for="subtotalProduto" class="form-label">Subtotal</label>
+                    <div class="input-group">
+                      <span class="input-group-text">R$</span>
+                      <input type="number" class="form-control" id="subtotalProduto" step="0.01" readonly>
+                    </div>
+                  </div>
+                </div>
+                <div class="d-grid">
+                  <button class="btn btn-primary" id="btnAdicionarProduto">
+                    <i class="bi bi-plus-circle me-2"></i> Adicionar Produto
+                  </button>
+                </div>
+
+                <div class="table-responsive mt-3">
+                  <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th>Produto</th>
+                        <th>Preço Unit.</th>
+                        <th>Quantidade</th>
+                        <th class="text-end">Subtotal</th>
+                        <th class="text-center">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody id="listaProdutos">
+                      <!-- Produtos serão adicionados aqui via JavaScript -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Pagamento -->
+              <div class="mb-4">
+                <h6 class="fw-bold mb-2">Pagamento</h6>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label for="formaPagamento" class="form-label">Forma de Pagamento</label>
+                    <select class="form-select" id="formaPagamento">
+                      <option value="dinheiro" selected>Dinheiro</option>
+                      <option value="cartao_credito">Cartão de Crédito</option>
+                      <option value="cartao_debito">Cartão de Débito</option>
+                      <option value="pix">PIX</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="descontoVenda" class="form-label">Desconto</label>
+                    <div class="input-group">
+                      <span class="input-group-text">R$</span>
+                      <input type="number" class="form-control" id="descontoVenda" min="0" step="0.01" value="0.00">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Observações -->
+              <div class="mb-4">
+                <h6 class="fw-bold mb-2">Observações</h6>
+                <textarea class="form-control" id="observacoesVenda" rows="2"
+                  placeholder="Observações sobre a venda..."></textarea>
+              </div>
+
+              <!-- Entrega -->
+              <div class="mb-4">
+                <h6 class="fw-bold mb-2">Entrega</h6>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label for="motoristaVenda" class="form-label">Motorista/Entregador</label>
+                    <select class="form-select" id="motoristaVenda">
+                      <option value="" selected disabled>Selecione o motorista</option>
+                      <option value="1">Carlos Silva</option>
+                      <option value="2">João Oliveira</option>
+                      <option value="3">Pedro Santos</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="dataEntrega" class="form-label">Data de Entrega</label>
+                    <input type="date" class="form-control" id="dataEntrega">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resumo da Venda -->
+        <div class="col-lg-4">
+          <div class="card sticky-top" style="top: 20px; z-index: 100;">
+            <div class="card-header">
+              <h5 class="mb-0">Resumo da Venda</h5>
+            </div>
+            <div class="card-body">
+              <div class="d-flex justify-content-between mb-3">
+                <span>Subtotal:</span>
+                <span id="subtotalVenda" class="fw-bold">R$ 0,00</span>
+              </div>
+              <div class="d-flex justify-content-between mb-3">
+                <span>Desconto:</span>
+                <span id="descontoResumo" class="fw-bold text-danger">- R$ 0,00</span>
+              </div>
+              <div class="d-flex justify-content-between mb-4">
+                <span class="fs-5">Total:</span>
+                <span id="totalVenda" class="fs-5 fw-bold">R$ 0,00</span>
+              </div>
+
+              <!-- Botões de Ação -->
+              <div class="d-grid gap-2">
+                <div class="btn-group">
+                  <button class="btn btn-success btn-lg" id="btnFinalizarVenda">
+                    <i class="bi bi-check-circle me-2"></i> Finalizar Venda
+                  </button>
+                  <button type="button" class="btn btn-success btn-lg dropdown-toggle dropdown-toggle-split"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                    <span class="visually-hidden">Toggle Dropdown</span>
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#" id="btnSalvarPendente">Salvar como Pendente</a></li>
+                  </ul>
+                </div>
+                <button class="btn btn-outline-danger" id="btnCancelarVenda">
+                  <i class="bi bi-x-circle me-2"></i> Cancelar Venda
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Cliente -->
+  <div class="modal fade" id="clienteModal" tabindex="-1" aria-labelledby="clienteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="clienteModalLabel">Selecionar Cliente</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <ul class="nav nav-tabs mb-3" id="clienteTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="selecionar-tab" data-bs-toggle="tab" data-bs-target="#selecionar"
+                type="button" role="tab" aria-controls="selecionar" aria-selected="true">Selecionar Cliente</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="cadastrar-tab" data-bs-toggle="tab" data-bs-target="#cadastrar" type="button"
+                role="tab" aria-controls="cadastrar" aria-selected="false">Cadastrar Novo</button>
+            </li>
+          </ul>
+          <div class="tab-content" id="clienteTabsContent">
+            <div class="tab-pane fade show active" id="selecionar" role="tabpanel" aria-labelledby="selecionar-tab">
+              <div class="mb-3">
+                <div class="input-group">
+                  <input type="text" class="form-control" placeholder="Buscar cliente..." id="buscarCliente">
+                  <button class="btn btn-outline-secondary" type="button" id="btnBuscarCliente">
+                    <i class="bi bi-search"></i>
+                  </button>
+                </div>
+              </div>
+              <ul class="list-group" id="listaClientes">
+                <!-- Clientes serão adicionados aqui via JavaScript -->
+                <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 class="mb-0">Maria Silva</h6>
+                    <small class="text-muted">(11) 98765-4321</small>
+                  </div>
+                  <button class="btn btn-sm btn-primary btn-selecionar" data-id="1">Selecionar</button>
+                </li>
+                <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 class="mb-0">João Oliveira</h6>
+                    <small class="text-muted">(11) 91234-5678</small>
+                  </div>
+                  <button class="btn btn-sm btn-primary btn-selecionar" data-id="2">Selecionar</button>
+                </li>
+                <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 class="mb-0">Ana Santos</h6>
+                    <small class="text-muted">(11) 99876-5432</small>
+                  </div>
+                  <button class="btn btn-sm btn-primary btn-selecionar" data-id="3">Selecionar</button>
+                </li>
+              </ul>
+            </div>
+            <div class="tab-pane fade" id="cadastrar" role="tabpanel" aria-labelledby="cadastrar-tab">
+              <form id="formCliente">
+                <div class="mb-3">
+                  <label for="nomeNovoCliente" class="form-label">Nome</label>
+                  <input type="text" class="form-control" id="nomeNovoCliente" required>
+                </div>
+                <div class="mb-3">
+                  <label for="telefoneNovoCliente" class="form-label">Telefone</label>
+                  <input type="tel" class="form-control" id="telefoneNovoCliente" required>
+                </div>
+                <div class="mb-3">
+                  <label for="enderecoNovoCliente" class="form-label">Endereço</label>
+                  <textarea class="form-control" id="enderecoNovoCliente" rows="2" required></textarea>
+                </div>
+                <div class="d-grid">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-person-plus me-2"></i> Cadastrar e Selecionar
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Finalizar Venda -->
+  <div class="modal fade" id="finalizarVendaModal" tabindex="-1" aria-labelledby="finalizarVendaModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="finalizarVendaModalLabel">Finalizar Venda</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <p>Confirme os detalhes do pagamento para finalizar a venda:</p>
+            <div class="alert alert-info">
+              <div class="mb-2"><strong>Cliente:</strong> <span id="clienteFinalizarVenda">Maria Silva</span></div>
+              <div class="mb-2"><strong>Total da Venda:</strong> <span id="totalFinalizarVenda">R$ 45,00</span></div>
+              <div><strong>Forma de Pagamento:</strong> <span id="formaPagamentoFinalizarVenda">Dinheiro</span></div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="valorRecebidoFinalizar" class="form-label">Valor Recebido</label>
+            <div class="input-group">
+              <span class="input-group-text">R$</span>
+              <input type="number" class="form-control" id="valorRecebidoFinalizar" min="0" step="0.01" value="45.00">
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <div class="d-flex justify-content-between">
+              <span class="fw-bold">Troco:</span>
+              <span id="trocoFinalizarVenda" class="fw-bold">R$ 0,00</span>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="observacoesFinalizarVenda" class="form-label">Observações</label>
+            <textarea class="form-control" id="observacoesFinalizarVenda" rows="2"
+              placeholder="Observações sobre o pagamento..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" id="btnConfirmarFinalizacao">
+            <i class="bi bi-check-circle me-1"></i> Confirmar Pagamento
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Salvar Venda Pendente -->
+  <div class="modal fade" id="salvarPendenteModal" tabindex="-1" aria-labelledby="salvarPendenteModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="salvarPendenteModalLabel">Salvar Venda Pendente</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <p>Você está salvando esta venda como <strong>pendente</strong>. Isso significa que:</p>
+          <ul>
+            <li>A venda será registrada no sistema</li>
+            <li>O pagamento será marcado como pendente</li>
+            <li>Você poderá finalizar a venda posteriormente quando o pagamento for confirmado</li>
+          </ul>
+
+          <div class="alert alert-info">
+            <strong>Total da Venda:</strong> <span id="totalVendaPendente">R$ 0,00</span><br>
+            <strong>Forma de Pagamento:</strong> <span id="formaPagamentoPendente">Dinheiro (a receber)</span>
+          </div>
+
+          <div class="mb-3">
+            <label for="observacoesPendente" class="form-label">Observações</label>
+            <textarea class="form-control" id="observacoesPendente" rows="2"
+              placeholder="Observações sobre a venda pendente..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btnConfirmarPendente">
+            <i class="bi bi-save me-1"></i> Salvar como Pendente
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- SweetAlert2 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+  <script src="../assets/js/sidebar.js"></script>
+  <script src="../assets/js/vendas.js"></script>
+</body>
+
+</html>

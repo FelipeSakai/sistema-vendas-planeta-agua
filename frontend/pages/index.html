@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planeta Água - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <i class="bi bi-droplet-fill fs-4"></i>
+            <h4>Planeta Água</h4>
+        </div>
+        <ul class="nav flex-column mt-4">
+            <li class="nav-item">
+                <a class="nav-link active" href="index.html">
+                    <i class="bi bi-speedometer2"></i>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="vendas.html">
+                    <i class="bi bi-cash-coin"></i>
+                    <span class="nav-text">Vendas</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="clientes.html">
+                    <i class="bi bi-people"></i>
+                    <span class="nav-text">Clientes</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="produtos.html">
+                    <i class="bi bi-box-seam"></i>
+                    <span class="nav-text">Produtos</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="usuarios.html">
+                    <i class="bi bi-person-badge"></i>
+                    <span class="nav-text">Usuários</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="relatorios.html">
+                    <i class="bi bi-bar-chart"></i>
+                    <span class="nav-text">Relatórios</span>
+                </a>
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <a class="nav-link" href="login.html">
+                <i class="bi bi-box-arrow-left"></i>
+                <span class="nav-text">Sair</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Sidebar Toggle Button -->
+    <button class="sidebar-toggle" id="sidebarToggle">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">Dashboard de Vendas</h2>
+                <div>
+                    <a href="vendas.html" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i> Nova Venda
+                    </a>
+                    <button class="btn btn-primary d-lg-none ms-2" id="mobileMenuBtn">
+                        <i class="bi bi-list"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Resumo Rápido -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card card-stats">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-box bg-primary">
+                                    <i class="bi bi-hourglass-split"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <h6 class="card-title">Vendas Pendentes</h6>
+                                    <h3 class="card-value">12</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card card-stats">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-box bg-success">
+                                    <i class="bi bi-check-circle"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <h6 class="card-title">Vendas Hoje</h6>
+                                    <h3 class="card-value">28</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card card-stats">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-box bg-info">
+                                    <i class="bi bi-currency-dollar"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <h6 class="card-title">Faturamento Hoje</h6>
+                                    <h3 class="card-value">R$ 3.450</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card card-stats">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-box bg-warning">
+                                    <i class="bi bi-truck"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <h6 class="card-title">Entregas Pendentes</h6>
+                                    <h3 class="card-value">8</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Filtros</h5>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label for="filtroStatus" class="form-label">Status</label>
+                            <select class="form-select" id="filtroStatus">
+                                <option value="todos" selected>Todos</option>
+                                <option value="pendente">Pendente</option>
+                                <option value="finalizada">Finalizada</option>
+                                <option value="cancelada">Cancelada</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="filtroPeriodo" class="form-label">Período</label>
+                            <select class="form-select" id="filtroPeriodo">
+                                <option value="hoje" selected>Hoje</option>
+                                <option value="ontem">Ontem</option>
+                                <option value="7dias">Últimos 7 dias</option>
+                                <option value="30dias">Últimos 30 dias</option>
+                                <option value="personalizado">Personalizado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="filtroCliente" class="form-label">Cliente</label>
+                            <input type="text" class="form-control" id="filtroCliente" placeholder="Nome do cliente">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="filtroMotorista" class="form-label">Motorista/Entregador</label>
+                            <select class="form-select" id="filtroMotorista">
+                                <option value="todos" selected>Todos</option>
+                                <option value="1">Carlos Silva</option>
+                                <option value="2">João Oliveira</option>
+                                <option value="3">Pedro Santos</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Período personalizado (inicialmente oculto) -->
+                    <div class="row g-3 mt-2" id="periodoPesonalizado" style="display: none;">
+                        <div class="col-md-3">
+                            <label for="dataInicio" class="form-label">Data Inicial</label>
+                            <input type="date" class="form-control" id="dataInicio">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="dataFim" class="form-label">Data Final</label>
+                            <input type="date" class="form-control" id="dataFim">
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-3">
+                        <button class="btn btn-outline-secondary me-2" id="btnLimparFiltros">Limpar</button>
+                        <button class="btn btn-primary" id="btnAplicarFiltros">Aplicar Filtros</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vendas Pendentes -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Vendas Pendentes</h5>
+                    <span class="badge bg-warning text-dark">12 vendas</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Data</th>
+                                    <th>Cliente</th>
+                                    <th>Itens</th>
+                                    <th>Motorista</th>
+                                    <th>Forma de Pagamento</th>
+                                    <th class="text-end">Total</th>
+                                    <th class="text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#1245</td>
+                                    <td>16/05/2023 09:15</td>
+                                    <td>Maria Silva</td>
+                                    <td>3 itens</td>
+                                    <td>Carlos Silva</td>
+                                    <td>Dinheiro (a receber)</td>
+                                    <td class="text-end">R$ 45,00</td>
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-success btn-finalizar-venda" data-id="1245"
+                                                title="Finalizar Venda">
+                                                <i class="bi bi-check-circle"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-primary btn-editar-venda" data-id="1245"
+                                                title="Editar Venda">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger btn-cancelar-venda" data-id="1245"
+                                                title="Cancelar Venda">
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>#1244</td>
+                                    <td>16/05/2023 08:30</td>
+                                    <td>João Oliveira</td>
+                                    <td>2 itens</td>
+                                    <td>Pedro Santos</td>
+                                    <td>Cartão de Crédito (a confirmar)</td>
+                                    <td class="text-end">R$ 95,90</td>
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-success btn-finalizar-venda" data-id="1244"
+                                                title="Finalizar Venda">
+                                                <i class="bi bi-check-circle"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-primary btn-editar-venda" data-id="1244"
+                                                title="Editar Venda">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger btn-cancelar-venda" data-id="1244"
+                                                title="Cancelar Venda">
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>#1243</td>
+                                    <td>16/05/2023 08:15</td>
+                                    <td>Ana Santos</td>
+                                    <td>1 item</td>
+                                    <td>Carlos Silva</td>
+                                    <td>PIX (a confirmar)</td>
+                                    <td class="text-end">R$ 30,00</td>
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-success btn-finalizar-venda" data-id="1243"
+                                                title="Finalizar Venda">
+                                                <i class="bi bi-check-circle"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-primary btn-editar-venda" data-id="1243"
+                                                title="Editar Venda">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger btn-cancelar-venda" data-id="1243"
+                                                title="Cancelar Venda">
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>#1242</td>
+                                    <td>15/05/2023 17:20</td>
+                                    <td>Carlos Ferreira</td>
+                                    <td>2 itens</td>
+                                    <td>João Oliveira</td>
+                                    <td>Dinheiro (a receber)</td>
+                                    <td class="text-end">R$ 69,00</td>
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-success btn-finalizar-venda" data-id="1242"
+                                                title="Finalizar Venda">
+                                                <i class="bi bi-check-circle"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-primary btn-editar-venda" data-id="1242"
+                                                title="Editar Venda">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger btn-cancelar-venda" data-id="1242"
+                                                title="Cancelar Venda">
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>#1241</td>
+                                    <td>15/05/2023 16:45</td>
+                                    <td>Juliana Costa</td>
+                                    <td>2 itens</td>
+                                    <td>Pedro Santos</td>
+                                    <td>Cartão de Débito (a confirmar)</td>
+                                    <td class="text-end">R$ 110,90</td>
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-success btn-finalizar-venda" data-id="1241"
+                                                title="Finalizar Venda">
+                                                <i class="bi bi-check-circle"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-primary btn-editar-venda" data-id="1241"
+                                                title="Editar Venda">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger btn-cancelar-venda" data-id="1241"
+                                                title="Cancelar Venda">
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vendas Recentes -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Vendas Recentes</h5>
+                    <span class="badge bg-primary">28 vendas hoje</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Data</th>
+                                    <th>Cliente</th>
+                                    <th>Itens</th>
+                                    <th>Motorista</th>
+                                    <th>Forma de Pagamento</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Total</th>
+                                    <th class="text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#1240</td>
+                                    <td>15/05/2023 15:45</td>
+                                    <td>Roberto Almeida</td>
+                                    <td>2 itens</td>
+                                    <td>Carlos Silva</td>
+                                    <td>PIX</td>
+                                    <td><span class="badge bg-success">Finalizada</span></td>
+                                    <td class="text-end">R$ 120,00</td>
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-outline-primary btn-view-venda" data-id="1240"
+                                                title="Ver Detalhes">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary btn-print-venda"
+                                                data-id="1240" title="Imprimir">
+                                                <i class="bi bi-printer"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>#1239</td>
+                                    <td>15/05/2023 14:30</td>
+                                    <td>Fernanda Lima</td>
+                                    <td>2 itens</td>
+                                    <td>João Oliveira</td>
+                                    <td>Cartão de Crédito</td>
+                                    <td><span class="badge bg-success">Finalizada</span></td>
+                                    <td class="text-end">R$ 87,00</td>
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-outline-primary btn-view-venda" data-id="1239"
+                                                title="Ver Detalhes">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary btn-print-venda"
+                                                data-id="1239" title="Imprimir">
+                                                <i class="bi bi-printer"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>#1238</td>
+                                    <td>15/05/2023 13:20</td>
+                                    <td>Marcelo Santos</td>
+                                    <td>2 itens</td>
+                                    <td>Pedro Santos</td>
+                                    <td>Dinheiro</td>
+                                    <td><span class="badge bg-success">Finalizada</span></td>
+                                    <td class="text-end">R$ 139,80</td>
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-outline-primary btn-view-venda" data-id="1238"
+                                                title="Ver Detalhes">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary btn-print-venda"
+                                                data-id="1238" title="Imprimir">
+                                                <i class="bi bi-printer"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>#1237</td>
+                                    <td>15/05/2023 12:15</td>
+                                    <td>Luciana Ferreira</td>
+                                    <td>3 itens</td>
+                                    <td>Carlos Silva</td>
+                                    <td>PIX</td>
+                                    <td><span class="badge bg-danger">Cancelada</span></td>
+                                    <td class="text-end">R$ 75,50</td>
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-outline-primary btn-view-venda" data-id="1237"
+                                                title="Ver Detalhes">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary btn-print-venda"
+                                                data-id="1237" title="Imprimir">
+                                                <i class="bi bi-printer"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>#1236</td>
+                                    <td>15/05/2023 11:30</td>
+                                    <td>Ricardo Gomes</td>
+                                    <td>1 item</td>
+                                    <td>João Oliveira</td>
+                                    <td>Cartão de Débito</td>
+                                    <td><span class="badge bg-success">Finalizada</span></td>
+                                    <td class="text-end">R$ 15,00</td>
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-outline-primary btn-view-venda" data-id="1236"
+                                                title="Ver Detalhes">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary btn-print-venda"
+                                                data-id="1236" title="Imprimir">
+                                                <i class="bi bi-printer"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <nav aria-label="Navegação de página">
+                        <ul class="pagination justify-content-center mb-0">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Anterior</a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">Próximo</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Finalizar Venda -->
+    <div class="modal fade" id="finalizarVendaModal" tabindex="-1" aria-labelledby="finalizarVendaModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="finalizarVendaModalLabel">Finalizar Venda #1245</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <p>Confirme os detalhes do pagamento para finalizar a venda:</p>
+                        <div class="alert alert-info">
+                            <div class="mb-2"><strong>Cliente:</strong> <span id="clienteFinalizarVenda">Maria
+                                    Silva</span></div>
+                            <div class="mb-2"><strong>Total da Venda:</strong> <span id="totalFinalizarVenda">R$
+                                    45,00</span></div>
+                            <div><strong>Forma de Pagamento:</strong> <span
+                                    id="formaPagamentoFinalizarVenda">Dinheiro</span></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="valorRecebidoFinalizar" class="form-label">Valor Recebido</label>
+                        <div class="input-group">
+                            <span class="input-group-text">R$</span>
+                            <input type="number" class="form-control" id="valorRecebidoFinalizar" min="0" step="0.01"
+                                value="45.00">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-bold">Troco:</span>
+                            <span id="trocoFinalizarVenda" class="fw-bold">R$ 0,00</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="observacoesFinalizarVenda" class="form-label">Observações</label>
+                        <textarea class="form-control" id="observacoesFinalizarVenda" rows="2"
+                            placeholder="Observações sobre o pagamento..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" id="btnConfirmarFinalizacao">
+                        <i class="bi bi-check-circle me-1"></i> Confirmar Pagamento
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Cancelar Venda -->
+    <div class="modal fade" id="cancelarVendaModal" tabindex="-1" aria-labelledby="cancelarVendaModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cancelarVendaModalLabel">Cancelar Venda #1245</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Tem certeza que deseja cancelar esta venda?</p>
+                    <div class="alert alert-warning">
+                        <div class="mb-2"><strong>Cliente:</strong> <span id="clienteCancelarVenda">Maria Silva</span>
+                        </div>
+                        <div><strong>Total da Venda:</strong> <span id="totalCancelarVenda">R$ 45,00</span></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="motivoCancelamento" class="form-label">Motivo do Cancelamento</label>
+                        <select class="form-select" id="motivoCancelamento" required>
+                            <option value="" selected disabled>Selecione o motivo</option>
+                            <option value="cliente_desistiu">Cliente desistiu</option>
+                            <option value="erro_cadastro">Erro de cadastro</option>
+                            <option value="produto_indisponivel">Produto indisponível</option>
+                            <option value="endereco_nao_encontrado">Endereço não encontrado</option>
+                            <option value="outro">Outro</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" id="outroMotivoCancelamento" style="display: none;">
+                        <label for="outroMotivo" class="form-label">Especifique o Motivo</label>
+                        <textarea class="form-control" id="outroMotivo" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Voltar</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarCancelamento">
+                        <i class="bi bi-x-circle me-1"></i> Confirmar Cancelamento
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Detalhes da Venda -->
+    <div class="modal fade" id="detalhesVendaModal" tabindex="-1" aria-labelledby="detalhesVendaModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="detalhesVendaModalLabel">Detalhes da Venda #1240</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="venda-details">
+                        <!-- Informações da Venda -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h6 class="border-bottom pb-2">Informações da Venda</h6>
+                                <div class="mb-2">
+                                    <strong>Data:</strong> <span id="dataVendaDetalhes">15/05/2023 15:45</span>
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Status:</strong> <span id="statusVendaDetalhes"><span
+                                            class="badge bg-success">Finalizada</span></span>
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Motorista:</strong> <span id="motoristaVendaDetalhes">Carlos Silva</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="border-bottom pb-2">Informações do Cliente</h6>
+                                <div class="mb-2">
+                                    <strong>Nome:</strong> <span id="clienteVendaDetalhes">Roberto Almeida</span>
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Telefone:</strong> <span id="telefoneClienteVendaDetalhes">(11)
+                                        98765-4321</span>
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Endereço:</strong> <span id="enderecoClienteVendaDetalhes">Rua das Flores,
+                                        123 - Centro</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Produtos da Venda -->
+                        <h6 class="border-bottom pb-2 mb-3">Produtos</h6>
+                        <div class="table-container mb-4">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Produto</th>
+                                        <th>Preço Unit.</th>
+                                        <th>Quantidade</th>
+                                        <th class="text-end">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Galão 20L</td>
+                                        <td>R$ 15,00</td>
+                                        <td>3</td>
+                                        <td class="text-end">R$ 45,00</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Água Mineral 500ml</td>
+                                        <td>R$ 2,50</td>
+                                        <td>30</td>
+                                        <td class="text-end">R$ 75,00</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="3" class="text-end fw-bold">Subtotal:</td>
+                                        <td class="text-end fw-bold">R$ 120,00</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3" class="text-end">Desconto:</td>
+                                        <td class="text-end">R$ 0,00 (0%)</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3" class="text-end fw-bold">Total:</td>
+                                        <td class="text-end fw-bold">R$ 120,00</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <!-- Pagamento -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h6 class="border-bottom pb-2">Pagamento</h6>
+                                <div class="mb-2">
+                                    <strong>Forma de Pagamento:</strong> <span
+                                        id="formaPagamentoVendaDetalhes">PIX</span>
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Data do Pagamento:</strong> <span id="dataPagamentoVendaDetalhes">15/05/2023
+                                        15:45</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="border-bottom pb-2">Observações</h6>
+                                <p id="observacoesVendaDetalhes">Pagamento confirmado via PIX.</p>
+                            </div>
+                        </div>
+
+                        <!-- Histórico da Venda -->
+                        <h6 class="border-bottom pb-2 mb-3">Histórico da Venda</h6>
+                        <div class="timeline mb-0">
+                            <div class="timeline-item">
+                                <div class="timeline-point bg-primary"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-date">15/05/2023 14:30</div>
+                                    <div class="timeline-title">Venda Registrada</div>
+                                    <div class="timeline-text">Venda registrada no sistema com status pendente.</div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-point bg-info"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-date">15/05/2023 14:45</div>
+                                    <div class="timeline-title">Saída para Entrega</div>
+                                    <div class="timeline-text">Motorista Carlos Silva saiu para entrega.</div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-point bg-success"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-date">15/05/2023 15:45</div>
+                                    <div class="timeline-title">Venda Finalizada</div>
+                                    <div class="timeline-text">Pagamento confirmado e venda finalizada.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" id="btnImprimirVendaDetalhes">
+                        <i class="bi bi-printer me-1"></i> Imprimir
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/js/sidebar.js"></script>
+    <script src="../assets/js/dashboard.js"></script>
+</body>
+
+</html>

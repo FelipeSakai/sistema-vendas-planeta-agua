@@ -1,0 +1,167 @@
+/* Estilos específicos para o dashboard */
+
+.card-stats {
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.card-stats:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+  color: #6c757d;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.card-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0;
+  color: #343a40;
+}
+
+.icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+}
+
+.bg-primary {
+  background-color: var(--primary-color) !important;
+}
+
+.bg-success {
+  background-color: #2e7d32 !important;
+}
+
+.bg-info {
+  background-color: #0288d1 !important;
+}
+
+.bg-warning {
+  background-color: #f57c00 !important;
+}
+
+.table th {
+  font-weight: 600;
+  color: #495057;
+  white-space: nowrap;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+.btn-group .btn {
+  padding: 0.25rem 0.5rem;
+}
+
+.btn-finalizar-venda, .btn-editar-venda, .btn-cancelar-venda,
+.btn-view-venda, .btn-print-venda {
+  margin: 0 2px;
+}
+
+/* Timeline para histórico de vendas */
+.timeline {
+  position: relative;
+  padding-left: 30px;
+  margin-bottom: 50px;
+}
+
+.timeline:before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 0;
+  height: 100%;
+  width: 2px;
+  background-color: #e9ecef;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 25px;
+}
+
+.timeline-item:last-child {
+  margin-bottom: 0;
+}
+
+.timeline-point {
+  position: absolute;
+  left: -30px;
+  top: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+}
+
+.timeline-content {
+  padding-bottom: 10px;
+}
+
+.timeline-date {
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-bottom: 5px;
+}
+
+.timeline-title {
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.timeline-text {
+  color: #495057;
+}
+
+/* Estilos para impressão */
+@media print {
+  .sidebar, .sidebar-toggle, .btn-group, .modal-header .btn-close, .modal-footer {
+    display: none !important;
+  }
+  
+  .main-content {
+    margin-left: 0 !important;
+    padding: 0 !important;
+  }
+  
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #dee2e6 !important;
+  }
+  
+  body {
+    background-color: white !important;
+  }
+  
+  .modal {
+    position: absolute;
+    left: 0;
+    top: 0;
+    margin: 0;
+    padding: 0;
+    overflow: visible !important;
+  }
+  
+  .modal-dialog {
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
+  }
+  
+  .modal-content {
+    border: none;
+    box-shadow: none;
+  }
+}

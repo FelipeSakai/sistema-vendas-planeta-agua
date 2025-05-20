@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planeta Água - Clientes</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/clientes.css">
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <i class="bi bi-droplet-fill fs-4"></i>
+      <h4>Planeta Água</h4>
+    </div>
+    <ul class="nav flex-column mt-4">
+        <li class="nav-item">
+        <a class="nav-link" href="index.html">
+          <i class="bi bi-speedometer2"></i>
+          <span class="nav-text">Dashboard</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="vendas.html">
+          <i class="bi bi-cash-coin"></i>
+          <span class="nav-text">Vendas</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link active" href="clientes.html">
+          <i class="bi bi-people"></i>
+          <span class="nav-text">Clientes</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="produtos.html">
+          <i class="bi bi-box-seam"></i>
+          <span class="nav-text">Produtos</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="usuarios.html">
+          <i class="bi bi-person-badge"></i>
+          <span class="nav-text">Usuários</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="relatorios.html">
+          <i class="bi bi-bar-chart"></i>
+          <span class="nav-text">Relatórios</span>
+        </a>
+      </li>
+    </ul>
+    <div class="sidebar-footer">
+      <a class="nav-link" href="#">
+        <i class="bi bi-box-arrow-left"></i>
+        <span class="nav-text">Sair</span>
+      </a>
+    </div>
+  </div>
+  
+  <!-- Sidebar Toggle Button -->
+  <button class="sidebar-toggle" id="sidebarToggle">
+    <i class="bi bi-list"></i>
+  </button>
+  
+  <!-- Main Content -->
+  <div class="main-content" id="mainContent">
+    <div class="container-fluid">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Clientes</h2>
+        <button class="btn btn-primary d-lg-none" id="mobileMenuBtn">
+          <i class="bi bi-list"></i>
+        </button>
+      </div>
+      
+      <!-- Filtros e Busca -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control" id="searchCliente" placeholder="Buscar cliente...">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <select class="form-select" id="filterTipo">
+                <option value="todos" selected>Todos os tipos</option>
+                <option value="pessoa_fisica">Pessoa Física</option>
+                <option value="pessoa_juridica">Pessoa Jurídica</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <select class="form-select" id="filterStatus">
+                <option value="todos" selected>Todos os status</option>
+                <option value="ativo">Ativo</option>
+                <option value="inativo">Inativo</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Botão Adicionar Cliente -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <span class="text-muted">Mostrando 1-10 de 145 clientes</span>
+        </div>
+        <button class="btn btn-primary" id="btnAddCliente">
+          <i class="bi bi-plus-lg me-1"></i> Adicionar Cliente
+        </button>
+      </div>
+      
+      <!-- Tabela de Clientes -->
+      <div class="card">
+        <div class="card-body">
+          <div class="table-container">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Tipo</th>
+                  <th>Telefone</th>
+                  <th>Email</th>
+                  <th>Endereço</th>
+                  <th>Status</th>
+                  <th class="text-end">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="avatar">MS</div>
+                      <div class="ms-2">
+                        <div class="fw-bold">Maria Silva</div>
+                        <div class="text-muted small">Cliente desde 10/01/2023</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Pessoa Física</td>
+                  <td>(11) 98765-4321</td>
+                  <td>maria.silva@email.com</td>
+                  <td>Rua das Flores, 123 - São Paulo, SP</td>
+                  <td><span class="badge bg-success">Ativo</span></td>
+                  <td class="text-end">
+                    <button class="btn btn-sm btn-outline-primary btn-view" data-id="1">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary btn-edit" data-id="1">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger btn-delete" data-id="1">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="avatar">JO</div>
+                      <div class="ms-2">
+                        <div class="fw-bold">João Oliveira</div>
+                        <div class="text-muted small">Cliente desde 15/02/2023</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Pessoa Física</td>
+                  <td>(11) 91234-5678</td>
+                  <td>joao.oliveira@email.com</td>
+                  <td>Av. Paulista, 1000 - São Paulo, SP</td>
+                  <td><span class="badge bg-success">Ativo</span></td>
+                  <td class="text-end">
+                    <button class="btn btn-sm btn-outline-primary btn-view" data-id="2">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary btn-edit" data-id="2">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger btn-delete" data-id="2">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="avatar">AS</div>
+                      <div class="ms-2">
+                        <div class="fw-bold">Ana Santos</div>
+                        <div class="text-muted small">Cliente desde 05/03/2023</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Pessoa Física</td>
+                  <td>(11) 99876-5432</td>
+                  <td>ana.santos@email.com</td>
+                  <td>Rua Augusta, 500 - São Paulo, SP</td>
+                  <td><span class="badge bg-success">Ativo</span></td>
+                  <td class="text-end">
+                    <button class="btn btn-sm btn-outline-primary btn-view" data-id="3">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary btn-edit" data-id="3">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger btn-delete" data-id="3">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="avatar">CF</div>
+                      <div class="ms-2">
+                        <div class="fw-bold">Carlos Ferreira</div>
+                        <div class="text-muted small">Cliente desde 20/03/2023</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Pessoa Física</td>
+                  <td>(11) 98765-1234</td>
+                  <td>carlos.ferreira@email.com</td>
+                  <td>Rua Oscar Freire, 300 - São Paulo, SP</td>
+                  <td><span class="badge bg-success">Ativo</span></td>
+                  <td class="text-end">
+                    <button class="btn btn-sm btn-outline-primary btn-view" data-id="4">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary btn-edit" data-id="4">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger btn-delete" data-id="4">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="avatar">JC</div>
+                      <div class="ms-2">
+                        <div class="fw-bold">Juliana Costa</div>
+                        <div class="text-muted small">Cliente desde 05/04/2023</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Pessoa Física</td>
+                  <td>(11) 91234-9876</td>
+                  <td>juliana.costa@email.com</td>
+                  <td>Av. Rebouças, 800 - São Paulo, SP</td>
+                  <td><span class="badge bg-success">Ativo</span></td>
+                  <td class="text-end">
+                    <button class="btn btn-sm btn-outline-primary btn-view" data-id="5">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary btn-edit" data-id="5">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger btn-delete" data-id="5">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="avatar company">AC</div>
+                      <div class="ms-2">
+                        <div class="fw-bold">Água Cristalina Ltda</div>
+                        <div class="text-muted small">Cliente desde 10/01/2023</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Pessoa Jurídica</td>
+                  <td>(11) 3456-7890</td>
+                  <td>contato@aguacristalina.com.br</td>
+                  <td>Av. Industrial, 1500 - São Paulo, SP</td>
+                  <td><span class="badge bg-success">Ativo</span></td>
+                  <td class="text-end">
+                    <button class="btn btn-sm btn-outline-primary btn-view" data-id="6">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary btn-edit" data-id="6">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger btn-delete" data-id="6">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="avatar company">HM</div>
+                      <div class="ms-2">
+                        <div class="fw-bold">Hotel Maravilha</div>
+                        <div class="text-muted small">Cliente desde 15/02/2023</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Pessoa Jurídica</td>
+                  <td>(11) 2345-6789</td>
+                  <td>reservas@hotelmaravilha.com.br</td>
+                  <td>Av. Berrini, 500 - São Paulo, SP</td>
+                  <td><span class="badge bg-success">Ativo</span></td>
+                  <td class="text-end">
+                    <button class="btn btn-sm btn-outline-primary btn-view" data-id="7">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary btn-edit" data-id="7">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger btn-delete" data-id="7">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="avatar">RA</div>
+                      <div class="ms-2">
+                        <div class="fw-bold">Roberto Almeida</div>
+                        <div class="text-muted small">Cliente desde 20/03/2023</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Pessoa Física</td>
+                  <td>(11) 98765-4321</td>
+                  <td>roberto.almeida@email.com</td>
+                  <td>Rua Consolação, 200 - São Paulo, SP</td>
+                  <td><span class="badge bg-secondary">Inativo</span></td>
+                  <td class="text-end">
+                    <button class="btn btn-sm btn-outline-primary btn-view" data-id="8">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary btn-edit" data-id="8">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger btn-delete" data-id="8">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="avatar company">RL</div>
+                      <div class="ms-2">
+                        <div class="fw-bold">Restaurante Lagoa</div>
+                        <div class="text-muted small">Cliente desde 05/04/2023</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Pessoa Jurídica</td>
+                  <td>(11) 3456-7890</td>
+                  <td>contato@restaurantelagoa.com.br</td>
+                  <td>Av. Brigadeiro Faria Lima, 1000 - São Paulo, SP</td>
+                  <td><span class="badge bg-success">Ativo</span></td>
+                  <td class="text-end">
+                    <button class="btn btn-sm btn-outline-primary btn-view" data-id="9">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary btn-edit" data-id="9">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger btn-delete" data-id="9">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="avatar">FL</div>
+                      <div class="ms-2">
+                        <div class="fw-bold">Fernanda Lima</div>
+                        <div class="text-muted small">Cliente desde 15/04/2023</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Pessoa Física</td>
+                  <td>(11) 91234-5678</td>
+                  <td>fernanda.lima@email.com</td>
+                  <td>Rua Haddock Lobo, 400 - São Paulo, SP</td>
+                  <td><span class="badge bg-success">Ativo</span></td>
+                  <td class="text-end">
+                    <button class="btn btn-sm btn-outline-primary btn-view" data-id="10">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary btn-edit" data-id="10">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger btn-delete" data-id="10">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Paginação -->
+          <nav aria-label="Navegação de página" class="mt-4">
+            <ul class="pagination justify-content-center">
+              <li class="page-item disabled">
+                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Anterior</a>
+              </li>
+              <li class="page-item active"><a class="page-link" href="#">1</a></li>
+              <li class="page-item"><a class="page-link" href="#">2</a></li>
+              <li class="page-item"><a class="page-link" href="#">3</a></li>
+              <li class="page-item">
+                <a class="page-link" href="#">Próximo</a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal Adicionar/Editar Cliente -->
+  <div class="modal fade" id="clienteModal" tabindex="-1" aria-labelledby="clienteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="clienteModalLabel">Adicionar Cliente</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <form id="clienteForm">
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="tipoCliente" class="form-label">Tipo de Cliente</label>
+                <select class="form-select" id="tipoCliente" required>
+                  <option value="" selected disabled>Selecione o tipo</option>
+                  <option value="pessoa_fisica">Pessoa Física</option>
+                  <option value="pessoa_juridica">Pessoa Jurídica</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="statusCliente" class="form-label">Status</label>
+                <select class="form-select" id="statusCliente" required>
+                  <option value="ativo" selected>Ativo</option>
+                  <option value="inativo">Inativo</option>
+                </select>
+              </div>
+            </div>
+            
+            <!-- Campos Pessoa Física -->
+            <div id="camposPessoaFisica">
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="nomeCliente" class="form-label">Nome Completo</label>
+                  <input type="text" class="form-control" id="nomeCliente" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="cpfCliente" class="form-label">CPF</label>
+                  <input type="text" class="form-control" id="cpfCliente" placeholder="000.000.000-00" required>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Campos Pessoa Jurídica -->
+            <div id="camposPessoaJuridica" style="display: none;">
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="razaoSocialCliente" class="form-label">Razão Social</label>
+                  <input type="text" class="form-control" id="razaoSocialCliente">
+                </div>
+                <div class="col-md-6">
+                  <label for="cnpjCliente" class="form-label">CNPJ</label>
+                  <input type="text" class="form-control" id="cnpjCliente" placeholder="00.000.000/0000-00">
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="nomeFantasiaCliente" class="form-label">Nome Fantasia</label>
+                <input type="text" class="form-control" id="nomeFantasiaCliente">
+              </div>
+            </div>
+            
+            <!-- Campos Comuns -->
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="telefoneCliente" class="form-label">Telefone</label>
+                <input type="text" class="form-control" id="telefoneCliente" placeholder="(00) 00000-0000" required>
+              </div>
+              <div class="col-md-6">
+                <label for="emailCliente" class="form-label">Email</label>
+                <input type="email" class="form-control" id="emailCliente" required>
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label for="cepCliente" class="form-label">CEP</label>
+                <input type="text" class="form-control" id="cepCliente" placeholder="00000-000" required>
+              </div>
+              <div class="col-md-8">
+                <label for="enderecoCliente" class="form-label">Endereço</label>
+                <input type="text" class="form-control" id="enderecoCliente" required>
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label for="numeroCliente" class="form-label">Número</label>
+                <input type="text" class="form-control" id="numeroCliente" required>
+              </div>
+              <div class="col-md-8">
+                <label for="complementoCliente" class="form-label">Complemento</label>
+                <input type="text" class="form-control" id="complementoCliente">
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label for="bairroCliente" class="form-label">Bairro</label>
+                <input type="text" class="form-control" id="bairroCliente" required>
+              </div>
+              <div class="col-md-4">
+                <label for="cidadeCliente" class="form-label">Cidade</label>
+                <input type="text" class="form-control" id="cidadeCliente" required>
+              </div>
+              <div class="col-md-4">
+                <label for="estadoCliente" class="form-label">Estado</label>
+                <select class="form-select" id="estadoCliente" required>
+                  <option value="" selected disabled>Selecione</option>
+                  <option value="AC">Acre</option>
+                  <option value="AL">Alagoas</option>
+                  <option value="AP">Amapá</option>
+                  <option value="AM">Amazonas</option>
+                  <option value="BA">Bahia</option>
+                  <option value="CE">Ceará</option>
+                  <option value="DF">Distrito Federal</option>
+                  <option value="ES">Espírito Santo</option>
+                  <option value="GO">Goiás</option>
+                  <option value="MA">Maranhão</option>
+                  <option value="MT">Mato Grosso</option>
+                  <option value="MS">Mato Grosso do Sul</option>
+                  <option value="MG">Minas Gerais</option>
+                  <option value="PA">Pará</option>
+                  <option value="PB">Paraíba</option>
+                  <option value="PR">Paraná</option>
+                  <option value="PE">Pernambuco</option>
+                  <option value="PI">Piauí</option>
+                  <option value="RJ">Rio de Janeiro</option>
+                  <option value="RN">Rio Grande do Norte</option>
+                  <option value="RS">Rio Grande do Sul</option>
+                  <option value="RO">Rondônia</option>
+                  <option value="RR">Roraima</option>
+                  <option value="SC">Santa Catarina</option>
+                  <option value="SP">São Paulo</option>
+                  <option value="SE">Sergipe</option>
+                  <option value="TO">Tocantins</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="observacoesCliente" class="form-label">Observações</label>
+              <textarea class="form-control" id="observacoesCliente" rows="3"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btnSalvarCliente">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal Visualizar Cliente -->
+  <div class="modal fade" id="viewClienteModal" tabindex="-1" aria-labelledby="viewClienteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="viewClienteModalLabel">Detalhes do Cliente</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="cliente-details">
+            <div class="cliente-header mb-4">
+              <div class="d-flex align-items-center">
+                <div class="avatar-lg">MS</div>
+                <div class="ms-3">
+                  <h4 id="viewNomeCliente">Maria Silva</h4>
+                  <p class="text-muted mb-0" id="viewTipoCliente">Pessoa Física</p>
+                  <span class="badge bg-success" id="viewStatusCliente">Ativo</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <h5 class="border-bottom pb-2">Informações de Contato</h5>
+                <div class="mb-2">
+                  <strong>Telefone:</strong> <span id="viewTelefoneCliente">(11) 98765-4321</span>
+                </div>
+                <div class="mb-2">
+                  <strong>Email:</strong> <span id="viewEmailCliente">maria.silva@email.com</span>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <h5 class="border-bottom pb-2">Informações Pessoais</h5>
+                <div class="mb-2">
+                  <strong>CPF:</strong> <span id="viewCpfCliente">123.456.789-00</span>
+                </div>
+                <div class="mb-2">
+                  <strong>Cliente desde:</strong> <span id="viewDataCadastroCliente">10/01/2023</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mb-4">
+              <h5 class="border-bottom pb-2">Endereço</h5>
+              <p id="viewEnderecoCompletoCliente">Rua das Flores, 123, Jardim Primavera, São Paulo - SP, CEP 01234-567</p>
+            </div>
+            
+            <div class="mb-4">
+              <h5 class="border-bottom pb-2">Observações</h5>
+              <p id="viewObservacoesCliente">Cliente prefere entregas no período da manhã.</p>
+            </div>
+            
+            <div class="mb-4">
+              <h5 class="border-bottom pb-2">Histórico de Compras</h5>
+              <div class="table-container">
+                <table class="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>Data</th>
+                      <th>Produtos</th>
+                      <th class="text-end">Valor</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>15/05/2023</td>
+                      <td>Galão 20L (3x)</td>
+                      <td class="text-end">R$ 45,00</td>
+                    </tr>
+                    <tr>
+                      <td>10/05/2023</td>
+                      <td>Galão 20L (2x), Água Mineral 500ml (12x)</td>
+                      <td class="text-end">R$ 60,00</td>
+                    </tr>
+                    <tr>
+                      <td>01/05/2023</td>
+                      <td>Galão 20L (3x), Suporte para Galão (1x)</td>
+                      <td class="text-end">R$ 80,90</td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colspan="2" class="text-end fw-bold">Total</td>
+                      <td class="text-end fw-bold">R$ 185,90</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+          <button type="button" class="btn btn-primary" id="btnEditarClienteView">Editar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal Confirmar Exclusão -->
+  <div class="modal fade" id="deleteClienteModal" tabindex="-1" aria-labelledby="deleteClienteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteClienteModalLabel">Confirmar Exclusão</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <p>Tem certeza que deseja excluir o cliente <strong id="deleteClienteNome">Maria Silva</strong>?</p>
+          <p class="text-danger">Esta ação não pode ser desfeita.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="btnConfirmarExclusao">Excluir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../assets/js/sidebar.js"></script>
+  <script src="../assets/js/clientes.js"></script>
+</body>
+</html>

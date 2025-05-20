@@ -1,0 +1,115 @@
+/* Estilos específicos para a tela de vendas */
+
+.card {
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
+}
+
+.card-header {
+  background-color: white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 1.25rem 1.5rem;
+  font-weight: 600;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+.form-control, .form-select {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.25rem rgba(30, 136, 229, 0.25);
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+}
+
+.btn-success {
+  background-color: #2e7d32;
+  border-color: #2e7d32;
+}
+
+.btn-success:hover {
+  background-color: #1b5e20;
+  border-color: #1b5e20;
+}
+
+.table th {
+  font-weight: 600;
+  color: #495057;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+.sticky-top {
+  top: 1.5rem;
+}
+
+#clienteSelecionado {
+  transition: all 0.3s ease;
+}
+
+.nav-tabs .nav-link {
+  color: #495057;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0.75rem 1rem;
+}
+
+.nav-tabs .nav-link.active {
+  color: var(--primary-color);
+  background-color: transparent;
+  border-bottom: 2px solid var(--primary-color);
+}
+
+.list-group-item {
+  border-radius: 8px !important;
+  margin-bottom: 0.5rem;
+  border: 1px solid #dee2e6;
+}
+
+.list-group-item:last-child {
+  margin-bottom: 0;
+}
+
+.btn-selecionar {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+/* Estilos para impressão */
+@media print {
+  .sidebar, .sidebar-toggle, .btn-group, .modal-header .btn-close, .modal-footer {
+    display: none !important;
+  }
+  
+  .main-content {
+    margin-left: 0 !important;
+    padding: 0 !important;
+  }
+  
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #dee2e6 !important;
+  }
+  
+  body {
+    background-color: white !important;
+  }
+}

@@ -1,0 +1,117 @@
+/* Estilos específicos para a página de produtos */
+
+.produto-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.produto-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.produto-img-container {
+  position: relative;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+}
+
+.produto-img {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.produto-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.produto-preco {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.produto-estoque {
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.produto-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.btn-view, .btn-edit, .btn-delete {
+  padding: 0.25rem 0.5rem;
+}
+
+/* Estilos para o modal de visualização */
+.produto-img-lg-container {
+  position: relative;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  margin-bottom: 1rem;
+}
+
+.produto-img-lg {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.produto-badge-lg {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.produto-preco-lg {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.produto-details h5 {
+  color: var(--primary-dark);
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.produto-details strong {
+  font-weight: 600;
+  color: #495057;
+}
+
+/* Estilos para paginação */
+.pagination .page-link {
+  color: var(--primary-color);
+}
+
+.pagination .page-item.active .page-link {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+/* Estilos para o formulário */
+.form-label {
+  font-weight: 500;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.25rem rgba(30, 136, 229, 0.25);
+}
