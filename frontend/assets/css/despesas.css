@@ -1,0 +1,160 @@
+/* Estilos específicos para a página de despesas */
+
+/* Cards de estatísticas */
+.stat-card {
+    transition: all 0.2s ease;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon {
+    font-size: 2rem;
+    opacity: 0.8;
+}
+
+/* Tabela de despesas */
+.table-container {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #dee2e6;
+    vertical-align: middle;
+}
+
+.table tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Categorias de despesas */
+.categoria-badge {
+    padding: 0.35rem 0.65rem;
+    border-radius: 50rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.categoria-combustivel {
+    background-color: #ff9800;
+    color: white;
+}
+
+.categoria-salarios {
+    background-color: #e91e63;
+    color: white;
+}
+
+.categoria-aluguel {
+    background-color: #9c27b0;
+    color: white;
+}
+
+.categoria-energia {
+    background-color: #f44336;
+    color: white;
+}
+
+.categoria-agua {
+    background-color: #2196f3;
+    color: white;
+}
+
+.categoria-internet {
+    background-color: #00bcd4;
+    color: white;
+}
+
+.categoria-manutencao {
+    background-color: #795548;
+    color: white;
+}
+
+.categoria-impostos {
+    background-color: #607d8b;
+    color: white;
+}
+
+.categoria-fornecedores {
+    background-color: #3f51b5;
+    color: white;
+}
+
+.categoria-outros {
+    background-color: #757575;
+    color: white;
+}
+
+/* Formulário */
+.form-control, .form-select {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #1e88e5;
+    box-shadow: 0 0 0 0.25rem rgba(30, 136, 229, 0.25);
+}
+
+/* Botões de ação na tabela */
+.btn-action {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    margin-right: 5px;
+}
+
+/* Responsividade */
+@media (max-width: 992px) {
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .card-header .d-flex {
+        margin-top: 10px;
+        width: 100%;
+    }
+    
+    .btn-action {
+        width: 28px;
+        height: 28px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .card-header .d-flex {
+        flex-wrap: wrap;
+    }
+    
+    .card-header .form-select,
+    .card-header .btn {
+        margin-top: 5px;
+    }
+}

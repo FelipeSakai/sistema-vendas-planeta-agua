@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planeta Água - Controle de Despesas</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/despesas.css">
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <i class="bi bi-droplet-fill fs-4"></i>
+            <h4>Planeta Água</h4>
+        </div>
+        <ul class="nav flex-column mt-4">
+            <li class="nav-item">
+                <a class="nav-link" href="index.html">
+                    <i class="bi bi-speedometer2"></i>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="vendas.html">
+                    <i class="bi bi-cash-coin"></i>
+                    <span class="nav-text">Vendas</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="clientes.html">
+                    <i class="bi bi-people"></i>
+                    <span class="nav-text">Clientes</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="produtos.html">
+                    <i class="bi bi-box-seam"></i>
+                    <span class="nav-text">Produtos</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="usuarios.html">
+                    <i class="bi bi-person-badge"></i>
+                    <span class="nav-text">Usuários</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="despesas.html">
+                    <i class="bi bi-wallet2"></i>
+                    <span class="nav-text">Despesas</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="relatorios.html">
+                    <i class="bi bi-bar-chart"></i>
+                    <span class="nav-text">Relatórios</span>
+                </a>
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <a class="nav-link" href="login.html">
+                <i class="bi bi-box-arrow-left"></i>
+                <span class="nav-text">Sair</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Sidebar Toggle Button -->
+    <button class="sidebar-toggle" id="sidebarToggle">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">Controle de Despesas</h2>
+                <button class="btn btn-primary d-lg-none" id="mobileMenuBtn">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card stat-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-1">Despesas do Mês</h6>
+                                    <h4 class="mb-0 text-danger" id="totalDespesasMes">R$ 0,00</h4>
+                                </div>
+                                <div class="stat-icon text-danger">
+                                    <i class="bi bi-cash-stack"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card stat-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-1">Receitas do Mês</h6>
+                                    <h4 class="mb-0 text-success" id="totalReceitasMes">R$ 0,00</h4>
+                                </div>
+                                <div class="stat-icon text-success">
+                                    <i class="bi bi-graph-up-arrow"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card stat-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-1">Balanço do Mês</h6>
+                                    <h4 class="mb-0" id="balancoMes">R$ 0,00</h4>
+                                </div>
+                                <div class="stat-icon">
+                                    <i class="bi bi-calculator"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Lançar Nova Despesa</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="formDespesa">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="descricaoDespesa" class="form-label">Descrição</label>
+                                        <input type="text" class="form-control" id="descricaoDespesa"
+                                            placeholder="Ex: Combustível para moto" required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label for="valorDespesa" class="form-label">Valor (R$)</label>
+                                        <input type="number" class="form-control" id="valorDespesa" min="0.01"
+                                            step="0.01" placeholder="0,00" required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label for="dataDespesa" class="form-label">Data</label>
+                                        <input type="date" class="form-control" id="dataDespesa" required>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="categoriaDespesa" class="form-label">Categoria</label>
+                                        <select class="form-select" id="categoriaDespesa" required>
+                                            <option value="" selected disabled>Selecione uma categoria</option>
+                                            <option value="combustivel">Combustível</option>
+                                            <option value="salarios">Salários</option>
+                                            <option value="aluguel">Aluguel</option>
+                                            <option value="energia">Energia Elétrica</option>
+                                            <option value="agua">Água</option>
+                                            <option value="internet">Internet/Telefone</option>
+                                            <option value="manutencao">Manutenção</option>
+                                            <option value="impostos">Impostos</option>
+                                            <option value="fornecedores">Fornecedores</option>
+                                            <option value="outros">Outros</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="formaPagamento" class="form-label">Forma de Pagamento</label>
+                                        <select class="form-select" id="formaPagamento" required>
+                                            <option value="" selected disabled>Selecione</option>
+                                            <option value="dinheiro">Dinheiro</option>
+                                            <option value="pix">PIX</option>
+                                            <option value="debito">Cartão de Débito</option>
+                                            <option value="credito">Cartão de Crédito</option>
+                                            <option value="transferencia">Transferência Bancária</option>
+                                            <option value="boleto">Boleto</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="responsavelDespesa" class="form-label">Responsável</label>
+                                        <input type="text" class="form-control" id="responsavelDespesa"
+                                            placeholder="Nome do responsável" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="observacaoDespesa" class="form-label">Observação</label>
+                                    <textarea class="form-control" id="observacaoDespesa" rows="2"
+                                        placeholder="Observações adicionais"></textarea>
+                                </div>
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-save me-1"></i> Salvar Despesa
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Histórico de Despesas</h5>
+                    <div class="d-flex gap-2">
+                        <select class="form-select" id="filtroMes">
+                            <option value="1">Janeiro</option>
+                            <option value="2">Fevereiro</option>
+                            <option value="3">Março</option>
+                            <option value="4">Abril</option>
+                            <option value="5">Maio</option>
+                            <option value="6">Junho</option>
+                            <option value="7">Julho</option>
+                            <option value="8">Agosto</option>
+                            <option value="9">Setembro</option>
+                            <option value="10">Outubro</option>
+                            <option value="11">Novembro</option>
+                            <option value="12">Dezembro</option>
+                        </select>
+                        <select class="form-select" id="filtroAno">
+                            <option value="2023">2023</option>
+                            <option value="2024">2024</option>
+                            <option value="2025">2025</option>
+                        </select>
+                        <select class="form-select" id="filtroCategoria">
+                            <option value="todas">Todas as categorias</option>
+                            <option value="combustivel">Combustível</option>
+                            <option value="salarios">Salários</option>
+                            <option value="aluguel">Aluguel</option>
+                            <option value="energia">Energia Elétrica</option>
+                            <option value="agua">Água</option>
+                            <option value="internet">Internet/Telefone</option>
+                            <option value="manutencao">Manutenção</option>
+                            <option value="impostos">Impostos</option>
+                            <option value="fornecedores">Fornecedores</option>
+                            <option value="outros">Outros</option>
+                        </select>
+                        <button class="btn btn-primary" id="btnFiltrarDespesas">
+                            <i class="bi bi-funnel me-1"></i> Filtrar
+                        </button>
+                        <button class="btn btn-success" id="btnExportarDespesas">
+                            <i class="bi bi-file-earmark-excel me-1"></i> Exportar
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Descrição</th>
+                                    <th>Categoria</th>
+                                    <th>Valor</th>
+                                    <th>Forma de Pagamento</th>
+                                    <th>Responsável</th>
+                                    <th class="text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaDespesas">
+                                <!-- Despesas serão carregadas via JavaScript -->
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="3" class="text-end">Total:</th>
+                                    <th id="totalDespesasTabela">R$ 0,00</th>
+                                    <th colspan="3"></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Relatório Financeiro</h5>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary" id="btnGerarRelatorio">
+                            <i class="bi bi-bar-chart me-1"></i> Gerar Relatório
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="mb-3">Despesas por Categoria</h6>
+                                    <div style="height: 300px;">
+                                        <canvas id="despesasCategoriaChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="mb-3">Receitas x Despesas</h6>
+                                    <div style="height: 300px;">
+                                        <canvas id="receitasDespesasChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="mb-3">Evolução Financeira</h6>
+                                    <div style="height: 300px;">
+                                        <canvas id="evolucaoFinanceiraChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Edição de Despesa -->
+    <div class="modal fade" id="editarDespesaModal" tabindex="-1" aria-labelledby="editarDespesaModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editarDespesaModalLabel">Editar Despesa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formEditarDespesa">
+                        <input type="hidden" id="editarDespesaId">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editarDescricaoDespesa" class="form-label">Descrição</label>
+                                <input type="text" class="form-control" id="editarDescricaoDespesa" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="editarValorDespesa" class="form-label">Valor (R$)</label>
+                                <input type="number" class="form-control" id="editarValorDespesa" min="0.01" step="0.01"
+                                    required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="editarDataDespesa" class="form-label">Data</label>
+                                <input type="date" class="form-control" id="editarDataDespesa" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="editarCategoriaDespesa" class="form-label">Categoria</label>
+                                <select class="form-select" id="editarCategoriaDespesa" required>
+                                    <option value="" selected disabled>Selecione uma categoria</option>
+                                    <option value="combustivel">Combustível</option>
+                                    <option value="salarios">Salários</option>
+                                    <option value="aluguel">Aluguel</option>
+                                    <option value="energia">Energia Elétrica</option>
+                                    <option value="agua">Água</option>
+                                    <option value="internet">Internet/Telefone</option>
+                                    <option value="manutencao">Manutenção</option>
+                                    <option value="impostos">Impostos</option>
+                                    <option value="fornecedores">Fornecedores</option>
+                                    <option value="outros">Outros</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="editarFormaPagamento" class="form-label">Forma de Pagamento</label>
+                                <select class="form-select" id="editarFormaPagamento" required>
+                                    <option value="" selected disabled>Selecione</option>
+                                    <option value="dinheiro">Dinheiro</option>
+                                    <option value="pix">PIX</option>
+                                    <option value="debito">Cartão de Débito</option>
+                                    <option value="credito">Cartão de Crédito</option>
+                                    <option value="transferencia">Transferência Bancária</option>
+                                    <option value="boleto">Boleto</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="editarResponsavelDespesa" class="form-label">Responsável</label>
+                                <input type="text" class="form-control" id="editarResponsavelDespesa" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editarObservacaoDespesa" class="form-label">Observação</label>
+                            <textarea class="form-control" id="editarObservacaoDespesa" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnSalvarEdicaoDespesa">
+                        <i class="bi bi-save me-1"></i> Salvar Alterações
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+    <script src="sidebar.js"></script>
+    <script src="despesas.js"></script>
+</body>
+
+</html>

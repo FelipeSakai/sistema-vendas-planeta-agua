@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
   <link rel="stylesheet" href="../assets/css/style.css">
   <link rel="stylesheet" href="../assets/css/clientes.css">
 </head>
+
 <body>
   <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
@@ -17,7 +19,7 @@
       <h4>Planeta Água</h4>
     </div>
     <ul class="nav flex-column mt-4">
-        <li class="nav-item">
+      <li class="nav-item">
         <a class="nav-link" href="index.html">
           <i class="bi bi-speedometer2"></i>
           <span class="nav-text">Dashboard</span>
@@ -48,6 +50,12 @@
         </a>
       </li>
       <li class="nav-item">
+        <a class="nav-link" href="despesas.html">
+          <i class="bi bi-wallet2"></i>
+          <span class="nav-text">Despesas</span>
+        </a>
+      </li>
+      <li class="nav-item">
         <a class="nav-link" href="relatorios.html">
           <i class="bi bi-bar-chart"></i>
           <span class="nav-text">Relatórios</span>
@@ -61,12 +69,12 @@
       </a>
     </div>
   </div>
-  
+
   <!-- Sidebar Toggle Button -->
   <button class="sidebar-toggle" id="sidebarToggle">
     <i class="bi bi-list"></i>
   </button>
-  
+
   <!-- Main Content -->
   <div class="main-content" id="mainContent">
     <div class="container-fluid">
@@ -76,7 +84,7 @@
           <i class="bi bi-list"></i>
         </button>
       </div>
-      
+
       <!-- Filtros e Busca -->
       <div class="card mb-4">
         <div class="card-body">
@@ -104,7 +112,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Botão Adicionar Cliente -->
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -114,7 +122,7 @@
           <i class="bi bi-plus-lg me-1"></i> Adicionar Cliente
         </button>
       </div>
-      
+
       <!-- Tabela de Clientes -->
       <div class="card">
         <div class="card-body">
@@ -405,7 +413,7 @@
               </tbody>
             </table>
           </div>
-          
+
           <!-- Paginação -->
           <nav aria-label="Navegação de página" class="mt-4">
             <ul class="pagination justify-content-center">
@@ -424,7 +432,7 @@
       </div>
     </div>
   </div>
-  
+
   <!-- Modal Adicionar/Editar Cliente -->
   <div class="modal fade" id="clienteModal" tabindex="-1" aria-labelledby="clienteModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -452,7 +460,7 @@
                 </select>
               </div>
             </div>
-            
+
             <!-- Campos Pessoa Física -->
             <div id="camposPessoaFisica">
               <div class="row mb-3">
@@ -466,7 +474,7 @@
                 </div>
               </div>
             </div>
-            
+
             <!-- Campos Pessoa Jurídica -->
             <div id="camposPessoaJuridica" style="display: none;">
               <div class="row mb-3">
@@ -484,7 +492,7 @@
                 <input type="text" class="form-control" id="nomeFantasiaCliente">
               </div>
             </div>
-            
+
             <!-- Campos Comuns -->
             <div class="row mb-3">
               <div class="col-md-6">
@@ -496,7 +504,7 @@
                 <input type="email" class="form-control" id="emailCliente" required>
               </div>
             </div>
-            
+
             <div class="row mb-3">
               <div class="col-md-4">
                 <label for="cepCliente" class="form-label">CEP</label>
@@ -507,7 +515,7 @@
                 <input type="text" class="form-control" id="enderecoCliente" required>
               </div>
             </div>
-            
+
             <div class="row mb-3">
               <div class="col-md-4">
                 <label for="numeroCliente" class="form-label">Número</label>
@@ -518,7 +526,7 @@
                 <input type="text" class="form-control" id="complementoCliente">
               </div>
             </div>
-            
+
             <div class="row mb-3">
               <div class="col-md-4">
                 <label for="bairroCliente" class="form-label">Bairro</label>
@@ -562,7 +570,7 @@
                 </select>
               </div>
             </div>
-            
+
             <div class="mb-3">
               <label for="observacoesCliente" class="form-label">Observações</label>
               <textarea class="form-control" id="observacoesCliente" rows="3"></textarea>
@@ -576,9 +584,10 @@
       </div>
     </div>
   </div>
-  
+
   <!-- Modal Visualizar Cliente -->
-  <div class="modal fade" id="viewClienteModal" tabindex="-1" aria-labelledby="viewClienteModalLabel" aria-hidden="true">
+  <div class="modal fade" id="viewClienteModal" tabindex="-1" aria-labelledby="viewClienteModalLabel"
+    aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
@@ -597,7 +606,7 @@
                 </div>
               </div>
             </div>
-            
+
             <div class="row mb-4">
               <div class="col-md-6">
                 <h5 class="border-bottom pb-2">Informações de Contato</h5>
@@ -618,17 +627,18 @@
                 </div>
               </div>
             </div>
-            
+
             <div class="mb-4">
               <h5 class="border-bottom pb-2">Endereço</h5>
-              <p id="viewEnderecoCompletoCliente">Rua das Flores, 123, Jardim Primavera, São Paulo - SP, CEP 01234-567</p>
+              <p id="viewEnderecoCompletoCliente">Rua das Flores, 123, Jardim Primavera, São Paulo - SP, CEP 01234-567
+              </p>
             </div>
-            
+
             <div class="mb-4">
               <h5 class="border-bottom pb-2">Observações</h5>
               <p id="viewObservacoesCliente">Cliente prefere entregas no período da manhã.</p>
             </div>
-            
+
             <div class="mb-4">
               <h5 class="border-bottom pb-2">Histórico de Compras</h5>
               <div class="table-container">
@@ -675,9 +685,10 @@
       </div>
     </div>
   </div>
-  
+
   <!-- Modal Confirmar Exclusão -->
-  <div class="modal fade" id="deleteClienteModal" tabindex="-1" aria-labelledby="deleteClienteModalLabel" aria-hidden="true">
+  <div class="modal fade" id="deleteClienteModal" tabindex="-1" aria-labelledby="deleteClienteModalLabel"
+    aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
@@ -695,9 +706,10 @@
       </div>
     </div>
   </div>
-  
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../assets/js/sidebar.js"></script>
   <script src="../assets/js/clientes.js"></script>
 </body>
+
 </html>
