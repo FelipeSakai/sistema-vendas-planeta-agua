@@ -1,3 +1,18 @@
-node_modules
-# Keep environment variables out of version control
+node_modules/
+
+dist/
+
+*.tsbuildinfo
+
 .env
+
+*.log
+logs/
+npm-debug.log*
+
+prisma/migrations/
+
+*.local
+.dockerignore
+
+
