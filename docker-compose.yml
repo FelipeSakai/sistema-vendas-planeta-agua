@@ -25,7 +25,7 @@ services:
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/planeta_agua
     volumes:
       - ./backend:/app
-    command: sh -c "npm install && npm run build && npm start"
+    command: sh -c "npm install && npx prisma migrate dev && npm run build && npm start"
 
 volumes:
   pgdata:

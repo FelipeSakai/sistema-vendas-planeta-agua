@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  postgres_test:
+    image: postgres:15
+    container_name: planeta_postgres_test
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: batata
+      POSTGRES_DB: planeta_agua_test
+    volumes:
+      - pgtest:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend_test:
+    build:
+      context: ./backend
+    container_name: planeta_backend_test
+    environment:
+      DATABASE_URL: postgres://postgres:batata@postgres_test:5432/planeta_agua_test
+    depends_on:
+      postgres_test:
+        condition: service_healthy
+    command: sh -c "npm install && npx prisma migrate dev --name init && npm test"
+
+volumes:
+  pgtest:
