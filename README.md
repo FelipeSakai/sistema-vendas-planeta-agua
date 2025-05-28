@@ -9,13 +9,22 @@ Sistema de gerenciamento de vendas e trocas de galões para empresas de distribu
 - Calcular automaticamente o total da venda.
 - Interface amigável com design responsivo para facilitar o uso em ambiente comercial.
 
+---
+
 ## 🧰 Tecnologias Utilizadas
 
-### Frontend:
+### 🎨 Frontend:
 - **HTML5**
 - **CSS3** com **Bootstrap 5.3**
-- **JavaScript** (vanilla)
+- **JavaScript (vanilla)**
 
-### Backend:
+### ⚙️ Backend:
 - **Node.js** com **Express.js**
 - **Banco de Dados PostgreSQL**
+- **Prisma ORM**
+- **Docker** + **Docker Compose**
+
+### 🧪 Testes:
+- **Jest** (testes unitários)
+- **Supertest** (testes de integração das rotas)
+- **Ambiente de teste isolado via Docker Compose**
