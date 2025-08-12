@@ -14,14 +14,27 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Cargo {
+  ADMIN
+  FUNCIONARIO
+  MOTORISTA
+}
+
+enum Status {
+  ATIVO
+  INATIVO
+}
+
 model Usuario {
-  id       Int      @id @default(autoincrement())
-  nome     String
-  email    String   @unique
-  senha    String
-  cargo    String
-  criadoEm DateTime @default(now())
-  //vendas      Venda[]
+  id           Int       @id @default(autoincrement())
+  nome         String
+  email        String    @unique
+  senha        String    //hash
+  cargo        Cargo     @default(FUNCIONARIO)
+  status       Status    @default(ATIVO)
+  criadoEm     DateTime  @default(now())
+  atualizadoEm DateTime  @updatedAt
+  ultimoLogin  DateTime?
 
   @@map("tb_usuario")
 }

@@ -1,6 +1,130 @@
 // Funcionalidades específicas para a página de usuários
-document.addEventListener('DOMContentLoaded', function() {
-  // Elementos do DOM
+document.addEventListener('DOMContentLoaded', function () {
+  // ====== Config e helpers da API ======
+  const API_BASE = localStorage.getItem('API_BASE') || 'http://localhost:3333';
+
+  // Redireciona se não houver token
+  const token = localStorage.getItem('token');
+  if (!token) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  async function apiFetch(path, options = {}) {
+    const res = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        ...(options.headers || {})
+      }
+    });
+    let data = null;
+    try { data = await res.json(); } catch (_) {}
+    if (!res.ok) {
+      const msg = (data && (data.error || data.message)) || `Erro ${res.status}`;
+      throw new Error(msg);
+    }
+    return data;
+  }
+
+  // ====== Funções utilitárias ======
+  function tipoBadge(tipo) {
+    switch ((tipo || '').toLowerCase()) {
+      case 'admin':
+      case 'administrador':
+        return { text: 'Administrador', cls: 'bg-primary', avatar: 'admin' };
+      case 'motorista':
+        return { text: 'Motorista', cls: 'bg-warning text-dark', avatar: 'driver' };
+      default:
+        return { text: 'Funcionário', cls: 'bg-info text-dark', avatar: '' };
+    }
+  }
+
+  function statusBadge(status) {
+    const s = (status || '').toLowerCase();
+    if (s === 'inativo' || s === 'inactive') {
+      return '<span class="badge bg-secondary">Inativo</span>';
+    }
+    return '<span class="badge bg-success">Ativo</span>';
+  }
+
+  function iniciais(nome) {
+    if (!nome) return '??';
+    const parts = nome.trim().split(/\s+/).slice(0, 2);
+    return parts.map(p => p[0]?.toUpperCase() || '').join('');
+  }
+
+  function formatarData(d) {
+    if (!d) return '';
+    const dt = new Date(d);
+    if (isNaN(dt)) return d;
+    return dt.toLocaleDateString('pt-BR');
+  }
+
+  function formatarDataHora(d) {
+    if (!d) return '-';
+    const dt = new Date(d);
+    if (isNaN(dt)) return d;
+    return dt.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+  }
+
+  function linhaUsuario(u) {
+    const tipo = tipoBadge(u.tipo || u.role);
+    const ini = iniciais(u.nome || u.name);
+    const email = u.email || '';
+    const ultimo = u.ultimoAcesso || u.lastLogin || '-';
+    const desde = u.desde || u.createdAt || '';
+    const id = u.id;
+
+    return `
+      <tr>
+        <td>
+          <div class="d-flex align-items-center">
+            <div class="avatar ${tipo.avatar}">${ini}</div>
+            <div class="ms-2">
+              <div class="fw-bold">${u.nome || u.name || '(sem nome)'}</div>
+              <div class="text-muted small">${desde ? 'Desde ' + formatarData(desde) : ''}</div>
+            </div>
+          </div>
+        </td>
+        <td><span class="badge ${tipo.cls}">${tipo.text}</span></td>
+        <td>${email}</td>
+        <td>${tel}</td>
+        <td>${statusBadge(u.status)}</td>
+        <td>${formatarDataHora(ultimo)}</td>
+        <td class="text-end">
+          <button class="btn btn-sm btn-outline-primary btn-view" data-id="${id}">
+            <i class="bi bi-eye"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-secondary btn-edit" data-id="${id}">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${id}">
+            <i class="bi bi-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  }
+
+  // ====== Carrega e preenche tabela ======
+  async function carregarUsuarios() {
+    try {
+      const lista = await apiFetch('/users'); // ajuste se o endpoint for diferente
+      const tbody = document.getElementById('tbodyUsuarios');
+      if (!Array.isArray(lista)) throw new Error('Resposta inesperada da API de usuários');
+
+      tbody.innerHTML = lista.map(linhaUsuario).join('');
+
+      // Eventos dos botões serão implementados na próxima parte
+    } catch (err) {
+      console.error(err);
+      alert('Falha ao carregar usuários: ' + err.message);
+    }
+  }
+
+  // ====== Seu código antigo para botões/modais ======
   const btnAddUsuario = document.getElementById('btnAddUsuario');
   const usuarioModal = new bootstrap.Modal(document.getElementById('usuarioModal'));
   const viewUsuarioModal = new bootstrap.Modal(document.getElementById('viewUsuarioModal'));
@@ -12,205 +136,25 @@ document.addEventListener('DOMContentLoaded', function() {
   const searchUsuario = document.getElementById('searchUsuario');
   const filterTipo = document.getElementById('filterTipo');
   const filterStatus = document.getElementById('filterStatus');
-  
-  // Botões de ação na tabela
-  const btnViewUsuarios = document.querySelectorAll('.btn-view');
-  const btnEditUsuarios = document.querySelectorAll('.btn-edit');
-  const btnDeleteUsuarios = document.querySelectorAll('.btn-delete');
-  
-  // Evento para mostrar/ocultar campos específicos para motoristas
+
+  // Eventos que você já tinha — ainda não ligados ao backend
   if (tipoUsuarioSelect) {
-    tipoUsuarioSelect.addEventListener('change', function() {
-      if (this.value === 'motorista') {
-        camposMotorista.style.display = 'block';
-      } else {
-        camposMotorista.style.display = 'none';
-      }
+    tipoUsuarioSelect.addEventListener('change', function () {
+      camposMotorista.style.display = this.value === 'motorista' ? 'block' : 'none';
     });
   }
-  
-  // Evento para abrir modal de adicionar usuário
+
   if (btnAddUsuario) {
-    btnAddUsuario.addEventListener('click', function() {
-      // Resetar formulário
+    btnAddUsuario.addEventListener('click', function () {
       document.getElementById('usuarioForm').reset();
       document.getElementById('usuarioModalLabel').textContent = 'Adicionar Usuário';
-      
-      // Ocultar campos de motorista por padrão
       camposMotorista.style.display = 'none';
-      
-      // Exibir o modal
       usuarioModal.show();
     });
   }
-  
-  // Evento para salvar usuário
-  if (btnSalvarUsuario) {
-    btnSalvarUsuario.addEventListener('click', function() {
-      // Aqui você implementaria a lógica para salvar os dados do usuário
-      // Por enquanto, apenas simularemos o salvamento
-      
-      // Validar formulário
-      const form = document.getElementById('usuarioForm');
-      if (!form.checkValidity()) {
-        // Trigger validation UI
-        form.reportValidity();
-        return;
-      }
-      
-      // Validar senhas
-      const senha = document.getElementById('senhaUsuario').value;
-      const confirmarSenha = document.getElementById('confirmarSenhaUsuario').value;
-      
-      if (senha !== confirmarSenha) {
-        alert('As senhas não coincidem!');
-        return;
-      }
-      
-      // Simular salvamento
-      console.log('Usuário salvo com sucesso!');
-      
-      // Fechar modal
-      usuarioModal.hide();
-      
-      // Exibir mensagem de sucesso
-      alert('Usuário salvo com sucesso!');
-      
-      // Recarregar a página (em uma aplicação real, você atualizaria a tabela sem recarregar)
-      // location.reload();
-    });
-  }
-  
-  // Eventos para botões de visualizar usuário
-  btnViewUsuarios.forEach(btn => {
-    btn.addEventListener('click', function() {
-      const usuarioId = this.getAttribute('data-id');
-      
-      // Aqui você buscaria os dados do usuário pelo ID
-      console.log('Visualizando usuário ID:', usuarioId);
-      
-      // Simular carregamento de dados
-      // Em uma aplicação real, você buscaria esses dados do servidor
-      
-      // Verificar se é motorista para mostrar/ocultar seção específica
-      const viewInfoMotorista = document.getElementById('viewInfoMotorista');
-      if (usuarioId === '3' || usuarioId === '5' || usuarioId === '8') {
-        viewInfoMotorista.style.display = 'block';
-      } else {
-        viewInfoMotorista.style.display = 'none';
-      }
-      
-      // Exibir o modal de visualização
-      viewUsuarioModal.show();
-    });
-  });
-  
-  // Eventos para botões de editar usuário
-  btnEditUsuarios.forEach(btn => {
-    btn.addEventListener('click', function() {
-      const usuarioId = this.getAttribute('data-id');
-      
-      // Aqui você buscaria os dados do usuário pelo ID
-      console.log('Editando usuário ID:', usuarioId);
-      
-      // Simular carregamento de dados no formulário
-      // Em uma aplicação real, você buscaria esses dados do servidor
-      
-      // Verificar se é motorista para mostrar/ocultar campos específicos
-      if (usuarioId === '3' || usuarioId === '5' || usuarioId === '8') {
-        camposMotorista.style.display = 'block';
-        document.getElementById('tipoUsuario').value = 'motorista';
-      } else if (usuarioId === '1' || usuarioId === '6') {
-        camposMotorista.style.display = 'none';
-        document.getElementById('tipoUsuario').value = 'admin';
-      } else {
-        camposMotorista.style.display = 'none';
-        document.getElementById('tipoUsuario').value = 'funcionario';
-      }
-      
-      // Atualizar título do modal
-      document.getElementById('usuarioModalLabel').textContent = 'Editar Usuário';
-      
-      // Exibir o modal de edição
-      usuarioModal.show();
-    });
-  });
-  
-  // Eventos para botões de excluir usuário
-  btnDeleteUsuarios.forEach(btn => {
-    btn.addEventListener('click', function() {
-      const usuarioId = this.getAttribute('data-id');
-      
-      // Aqui você buscaria o nome do usuário pelo ID
-      console.log('Excluindo usuário ID:', usuarioId);
-      
-      // Simular carregamento do nome do usuário
-      // Em uma aplicação real, você buscaria esse dado do servidor
-      
-      // Exibir o modal de confirmação
-      deleteUsuarioModal.show();
-    });
-  });
-  
-  // Evento para confirmar exclusão
-  if (btnConfirmarExclusao) {
-    btnConfirmarExclusao.addEventListener('click', function() {
-      // Aqui você implementaria a lógica para excluir o usuário
-      console.log('Usuário excluído com sucesso!');
-      
-      // Fechar modal
-      deleteUsuarioModal.hide();
-      
-      // Exibir mensagem de sucesso
-      alert('Usuário excluído com sucesso!');
-      
-      // Recarregar a página (em uma aplicação real, você atualizaria a tabela sem recarregar)
-      // location.reload();
-    });
-  }
-  
-  // Evento para busca de usuários
-  if (searchUsuario) {
-    searchUsuario.addEventListener('input', function() {
-      const searchTerm = this.value.toLowerCase();
-      
-      // Aqui você implementaria a lógica para filtrar os usuários
-      console.log('Buscando por:', searchTerm);
-      
-      // Em uma aplicação real, você faria uma requisição ao servidor ou filtraria os dados localmente
-    });
-  }
-  
-  // Eventos para filtros
-  if (filterTipo) {
-    filterTipo.addEventListener('change', function() {
-      const tipoSelecionado = this.value;
-      
-      // Aqui você implementaria a lógica para filtrar por tipo
-      console.log('Filtrando por tipo:', tipoSelecionado);
-      
-      // Em uma aplicação real, você faria uma requisição ao servidor ou filtraria os dados localmente
-    });
-  }
-  
-  if (filterStatus) {
-    filterStatus.addEventListener('change', function() {
-      const statusSelecionado = this.value;
-      
-      // Aqui você implementaria a lógica para filtrar por status
-      console.log('Filtrando por status:', statusSelecionado);
-      
-      // Em uma aplicação real, você faria uma requisição ao servidor ou filtraria os dados localmente
-    });
-  }
-  
-  // Inicializar máscaras para campos de formulário
-  function initMasks() {
-    // Em uma aplicação real, você usaria uma biblioteca como o inputmask.js
-    // Por enquanto, apenas logamos que as máscaras foram inicializadas
-    console.log('Máscaras de formulário inicializadas');
-  }
-  
-  // Inicializar máscaras
-  initMasks();
+
+  // Aqui viriam as lógicas de salvar, editar, excluir — faremos nas próximas partes
+
+  // ====== Inicialização ======
+  carregarUsuarios();
 });

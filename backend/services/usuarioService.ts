@@ -1,3 +1,4 @@
+import { Cargo } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import bcrypt from 'bcryptjs';
 
@@ -6,7 +7,7 @@ export const criarUsuario = async (dados: {
     nome: string,
     email: string,
     senha: string,
-    cargo: string
+    cargo: Cargo
 }) => {
     const usuarioExistente = await prisma.usuario.findUnique({
         where: { email: dados.email }
@@ -42,7 +43,9 @@ export const listarUsuarios = async () => {
             nome: true,
             email: true,
             cargo: true,
-            criadoEm: true
+            status: true,
+            criadoEm: true,
+            atualizadoEm: true
         }
     });
 }
@@ -55,7 +58,9 @@ export const buscarUsuarioPorId = async (id: string) => {
             nome: true,
             email: true,
             cargo: true,
-            criadoEm: true
+            status: true,
+            criadoEm: true,
+            atualizadoEm: true
         }
     });
 
@@ -68,7 +73,7 @@ export const atualizarUsuarios = async (id: string, dados: {
     nome?: string;
     email?: string;
     senha?: string;
-    cargo?: string;
+    cargo?: Cargo;
 }) => {
     const usuarioExistente = await prisma.usuario.findUnique({
         where: { id: Number(id) }
