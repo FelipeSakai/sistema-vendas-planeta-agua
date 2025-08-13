@@ -6,7 +6,6 @@
 
 generator client {
   provider      = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -29,7 +28,7 @@ model Usuario {
   id           Int       @id @default(autoincrement())
   nome         String
   email        String    @unique
-  senha        String    //hash
+  senhaHash    String //hash
   cargo        Cargo     @default(FUNCIONARIO)
   status       Status    @default(ATIVO)
   criadoEm     DateTime  @default(now())

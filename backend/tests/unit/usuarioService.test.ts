@@ -1,5 +1,6 @@
 import * as usuarioService from '../../services/usuarioService';
-import bcrypt from 'bcryptjs';
+import { Cargo } from '@prisma/client';
+
 
 
 jest.mock('../../lib/prisma', () => ({
@@ -22,23 +23,19 @@ describe('usuarioService.criarUsuario', () => {
 
   it('deve criar usuário com senha criptografada', async () => {
     (prisma.usuario.findUnique as jest.Mock).mockResolvedValue(null);
+
     (prisma.usuario.create as jest.Mock).mockResolvedValue({
       id: 1,
       nome: 'Felipe',
       email: 'felipe@test.com',
-      cargo: 'admin',
-      criadoEm: new Date()
+      cargo: Cargo.ADMIN,
     });
 
     const resultado = await usuarioService.criarUsuario({
       nome: 'Felipe',
       email: 'felipe@test.com',
       senha: '123456',
-      cargo: 'admin'
-    });
-
-    expect(prisma.usuario.findUnique).toHaveBeenCalledWith({
-      where: { email: 'felipe@test.com' }
+      cargo: Cargo.ADMIN, 
     });
 
     expect(prisma.usuario.create).toHaveBeenCalled();
@@ -46,28 +43,39 @@ describe('usuarioService.criarUsuario', () => {
     expect(resultado).not.toHaveProperty('senha');
   });
 
-  it('deve lançar erro se o e-mail já estiver cadastrado', async () => {
-    (prisma.usuario.findUnique as jest.Mock).mockResolvedValue({ id: 1 });
+  it('deve lançar erro se o e-mail já estiver cadastrado (P2002)', async () => {
+    (prisma.usuario.create as jest.Mock).mockRejectedValue({
+      code: 'P2002',
+      meta: { target: ['email'] }
+    });
 
     await expect(
       usuarioService.criarUsuario({
         nome: 'Duplicado',
         email: 'duplicado@test.com',
         senha: '123456',
-        cargo: 'admin'
+        cargo: Cargo.ADMIN,
       })
     ).rejects.toThrow('Usuário já existe com esse e-mail');
   });
 });
 
-describe('usuarioService.atualizarUsuario', () => {
+describe('usuarioService.atualizarUsuarios', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('deve atualizar o usuário com nova senha', async () => {
-    (prisma.usuario.findUnique as jest.Mock).mockResolvedValue({ id: 1 });
+    (prisma.usuario.findUnique as jest.Mock).mockResolvedValue({
+      id: 1,
+      email: 'email@teste.com'
+    });
+
     (prisma.usuario.update as jest.Mock).mockResolvedValue({
       id: 1,
       nome: 'Atualizado',
       email: 'email@teste.com',
-      cargo: 'admin',
+      cargo: Cargo.ADMIN,
       criadoEm: new Date()
     });
 
@@ -88,15 +96,27 @@ describe('usuarioService.atualizarUsuario', () => {
     (prisma.usuario.findUnique as jest.Mock).mockResolvedValue(null);
 
     await expect(
-      usuarioService.atualizarUsuarios('1', {
-        nome: 'Inexistente'
-      })
+      usuarioService.atualizarUsuarios('1', { nome: 'Inexistente' })
     ).rejects.toThrow('Usuário não encontrado');
+  });
+
+  it('deve lançar erro se e-mail novo já estiver em uso', async () => {
+
+    (prisma.usuario.findUnique as jest.Mock)
+      .mockResolvedValueOnce({ id: 1, email: 'atual@teste.com' }) 
+      .mockResolvedValueOnce({ id: 2, email: 'novo@teste.com' }); 
+
+    await expect(
+      usuarioService.atualizarUsuarios('1', { email: 'novo@teste.com' })
+    ).rejects.toThrow('Usuário já existe com esse e-mail');
   });
 });
 
-
 describe('usuarioService.excluirUsuario', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('deve excluir o usuário com sucesso', async () => {
     (prisma.usuario.findUnique as jest.Mock).mockResolvedValue({ id: 1 });
     (prisma.usuario.delete as jest.Mock).mockResolvedValue({ id: 1 });

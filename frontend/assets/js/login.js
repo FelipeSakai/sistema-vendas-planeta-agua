@@ -1,103 +1,106 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // Referência ao formulário de login
-    const loginForm = document.getElementById('loginForm');
-    const submitBtn = loginForm?.querySelector('button[type="submit"]');
+  const loginForm = document.getElementById('loginForm');
+  const submitBtn = loginForm?.querySelector('button[type="submit"]');
 
-    // Ajuste se sua API estiver em outro host/porta
-    const API_BASE = localStorage.getItem('API_BASE') || 'http://localhost:3333';
-    const LOGIN_PATH = '/auth/login'; // ajuste se seu backend usar outro caminho
+  const API_BASE = localStorage.getItem('API_BASE') || 'http://localhost:3333';
+  const LOGIN_PATH = '/auth/login';
 
-    // Função para chamada ao backend
-    async function loginRequest(credentials) {
-        const res = await fetch(`${API_BASE}${LOGIN_PATH}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(credentials),
-        });
+  async function loginRequest(credentials) {
+    const res = await fetch(`${API_BASE}${LOGIN_PATH}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    });
 
-        let data = null;
-        try { data = await res.json(); } catch (e) {}
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = { error: text };
+    }
 
-        if (!res.ok) {
-            const msg = (data && (data.error || data.message)) || `Erro ${res.status}`;
-            throw new Error(msg);
+    if (!res.ok) {
+      const msg = data?.error || data?.message || `Erro ${res.status}`;
+      throw new Error(msg);
+    }
+
+    if (!data?.token && !data?.dados?.token) {
+      throw new Error('Resposta inválida do servidor: token ausente.');
+    }
+
+    return data;
+  }
+
+  function setLoading(loading) {
+    if (!submitBtn) return;
+    submitBtn.disabled = loading;
+    submitBtn.textContent = loading ? 'Entrando...' : 'Entrar';
+  }
+
+  if (loginForm) {
+    loginForm.addEventListener('submit', async function (event) {
+      event.preventDefault();
+
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      if (!username || !password) {
+        if (window.Swal?.fire) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Campos obrigatórios',
+            text: 'Por favor, preencha todos os campos.',
+            confirmButtonColor: '#1e88e5'
+          });
+        } else {
+          alert('Preencha email e senha.');
         }
-        return data; // esperado: { token, user }
-    }
-
-    function setLoading(loading) {
-        if (!submitBtn) return;
-        submitBtn.disabled = loading;
-        submitBtn.textContent = loading ? 'Entrando...' : 'Entrar';
-    }
-
-    // Verificar se o usuário já está logado
-    const isLoggedIn = !!localStorage.getItem('token');
-    if (isLoggedIn) {
-        // Se já estiver logado, redirecionar para a página principal
-        window.location.href = 'index.html';
         return;
-    }
+      }
 
-    // Adicionar evento de submit ao formulário
-    if (loginForm) {
-        loginForm.addEventListener('submit', async function (event) {
-            // Prevenir o comportamento padrão do formulário
-            event.preventDefault();
+      setLoading(true);
+      try {
+        const payload = { email: username, senha: password };
+        const data = await loginRequest(payload);
 
-            // Obter valores dos campos
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value.trim();
+        localStorage.setItem('token', data.dados?.token || data.token);
 
-            // Verificar se os campos estão preenchidos
-            if (!username || !password) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Campos obrigatórios',
-                    text: 'Por favor, preencha todos os campos.',
-                    confirmButtonColor: '#1e88e5'
-                });
-                return;
-            }
+        if (data.dados?.user || data.user) {
+          const userData = data.dados?.user || data.user;
+          localStorage.setItem('user', JSON.stringify(userData));
+          if (userData.cargo) localStorage.setItem('role', userData.cargo);
+        }
 
-            setLoading(true);
-            try {
-                // Ajuste os campos conforme seu backend espera
-                const payload = { login: username, senha: password };
-
-                const data = await loginRequest(payload);
-
-                if (!data || !data.token) {
-                    throw new Error('Resposta inválida do servidor.');
-                }
-
-                // Salvar informação de login no localStorage
-                localStorage.setItem('token', data.token);
-                if (data.user) {
-                    localStorage.setItem('user', JSON.stringify(data.user));
-                    if (data.user.role) localStorage.setItem('role', data.user.role);
-                }
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Login realizado com sucesso!',
-                    text: 'Você será redirecionado para o dashboard.',
-                    confirmButtonColor: '#1e88e5',
-                    timer: 1200,
-                    showConfirmButton: false
-                }).then(() => {
-                    window.location.href = 'index.html';
-                });
-            } catch (err) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Falha no login',
-                    text: err.message || 'Usuário ou senha incorretos. Tente novamente.',
-                    confirmButtonColor: '#1e88e5'
-                });
-            } finally {
-                setLoading(false);
-            }
-        });
-    }
+        if (window.Swal?.fire) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Login realizado com sucesso!',
+            text: 'Você será redirecionado para o dashboard.',
+            confirmButtonColor: '#1e88e5',
+            timer: 1200,
+            showConfirmButton: false
+          }).then(() => {
+            window.location.href = 'index.html';
+          });
+        } else {
+          alert('Login OK!');
+          window.location.href = 'index.html';
+        }
+      } catch (err) {
+        if (window.Swal?.fire) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Falha no login',
+            text: err.message || 'Usuário ou senha incorretos.',
+            confirmButtonColor: '#1e88e5'
+          });
+        } else {
+          alert(err.message || 'Falha no login');
+        }
+      } finally {
+        setLoading(false);
+      }
+    });
+  }
 });

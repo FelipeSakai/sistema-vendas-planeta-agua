@@ -2,13 +2,18 @@
 <html lang="pt-BR">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Planeta Água - Usuários</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-  <link rel="stylesheet" href="../assets/css/style.css">
-  <link rel="stylesheet" href="../assets/css/usuarios.css">
+
+  <!-- CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
+  <link rel="stylesheet" href="../assets/css/style.css" />
+  <link rel="stylesheet" href="../assets/css/usuarios.css" />
+
+  <!-- SweetAlert2 (necessário para os alerts do usuarios.js) -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
@@ -21,51 +26,44 @@
     <ul class="nav flex-column mt-4">
       <li class="nav-item">
         <a class="nav-link" href="index.html">
-          <i class="bi bi-speedometer2"></i>
-          <span class="nav-text">Dashboard</span>
+          <i class="bi bi-speedometer2"></i><span class="nav-text">Dashboard</span>
         </a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="vendas.html">
-          <i class="bi bi-cash-coin"></i>
-          <span class="nav-text">Vendas</span>
+          <i class="bi bi-cash-coin"></i><span class="nav-text">Vendas</span>
         </a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="clientes.html">
-          <i class="bi bi-people"></i>
-          <span class="nav-text">Clientes</span>
+          <i class="bi bi-people"></i><span class="nav-text">Clientes</span>
         </a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="produtos.html">
-          <i class="bi bi-box-seam"></i>
-          <span class="nav-text">Produtos</span>
+          <i class="bi bi-box-seam"></i><span class="nav-text">Produtos</span>
         </a>
       </li>
       <li class="nav-item">
         <a class="nav-link active" href="usuarios.html">
-          <i class="bi bi-person-badge"></i>
-          <span class="nav-text">Usuários</span>
+          <i class="bi bi-person-badge"></i><span class="nav-text">Usuários</span>
         </a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="despesas.html">
-          <i class="bi bi-wallet2"></i>
-          <span class="nav-text">Despesas</span>
+          <i class="bi bi-wallet2"></i><span class="nav-text">Despesas</span>
         </a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="relatorios.html">
-          <i class="bi bi-bar-chart"></i>
-          <span class="nav-text">Relatórios</span>
+          <i class="bi bi-bar-chart"></i><span class="nav-text">Relatórios</span>
         </a>
       </li>
     </ul>
     <div class="sidebar-footer">
-      <a class="nav-link" href="login.html">
-        <i class="bi bi-box-arrow-left"></i>
-        <span class="nav-text">Sair</span>
+      <a class="nav-link" href="login.html"
+        onclick="localStorage.removeItem('token'); localStorage.removeItem('user'); localStorage.removeItem('role');">
+        <i class="bi bi-box-arrow-left"></i><span class="nav-text">Sair</span>
       </a>
     </div>
   </div>
@@ -98,26 +96,26 @@
             <div class="col-md-3">
               <select class="form-select" id="filterTipo">
                 <option value="todos" selected>Todos os tipos</option>
-                <option value="funcionario">Funcionário</option>
-                <option value="motorista">Motorista</option>
-                <option value="admin">Administrador</option>
+                <option value="FUNCIONARIO">Funcionário</option>
+                <option value="MOTORISTA">Motorista</option>
+                <option value="ADMIN">Administrador</option>
               </select>
             </div>
             <div class="col-md-3">
               <select class="form-select" id="filterStatus">
                 <option value="todos" selected>Todos os status</option>
-                <option value="ativo">Ativo</option>
-                <option value="inativo">Inativo</option>
+                <option value="ATIVO">Ativo</option>
+                <option value="INATIVO">Inativo</option>
               </select>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Botão Adicionar Usuário -->
+      <!-- Topo da Tabela / Botão Adicionar -->
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <span class="text-muted">Mostrando 1-8 de 8 usuários</span>
+          <span class="text-muted" id="usuariosResumo">Carregando…</span>
         </div>
         <button class="btn btn-primary" id="btnAddUsuario">
           <i class="bi bi-plus-lg me-1"></i> Adicionar Usuário
@@ -134,7 +132,6 @@
                   <th>Nome</th>
                   <th>Tipo</th>
                   <th>Email</th>
-                  <th>Telefone</th>
                   <th>Status</th>
                   <th>Último Acesso</th>
                   <th class="text-end">Ações</th>
@@ -158,104 +155,45 @@
         </div>
         <div class="modal-body">
           <form id="usuarioForm">
+            <!-- id oculto para edição -->
+            <input type="hidden" id="usuarioId">
+
             <div class="row mb-3">
               <div class="col-md-6">
-                <label for="nomeUsuario" class="form-label">Nome Completo</label>
-                <input type="text" class="form-control" id="nomeUsuario" required>
+                <label for="nome" class="form-label">Nome Completo</label>
+                <input type="text" class="form-control" id="nome" required>
               </div>
               <div class="col-md-6">
-                <label for="tipoUsuario" class="form-label">Tipo de Usuário</label>
-                <select class="form-select" id="tipoUsuario" required>
-                  <option value="" selected disabled>Selecione o tipo</option>
-                  <option value="funcionario">Funcionário</option>
-                  <option value="motorista">Motorista</option>
-                  <option value="admin">Administrador</option>
+                <label for="cargo" class="form-label">Tipo de Usuário</label>
+                <select class="form-select" id="cargo" required>
+                  <option value="FUNCIONARIO">Funcionário</option>
+                  <option value="MOTORISTA">Motorista</option>
+                  <option value="ADMIN">Administrador</option>
                 </select>
               </div>
             </div>
 
             <div class="row mb-3">
               <div class="col-md-6">
-                <label for="emailUsuario" class="form-label">Email</label>
-                <input type="email" class="form-control" id="emailUsuario" required>
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" required>
               </div>
               <div class="col-md-6">
-                <label for="telefoneUsuario" class="form-label">Telefone</label>
-                <input type="text" class="form-control" id="telefoneUsuario" placeholder="(00) 00000-0000" required>
-              </div>
-            </div>
-
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label for="senhaUsuario" class="form-label">Senha</label>
-                <input type="password" class="form-control" id="senhaUsuario" required>
-              </div>
-              <div class="col-md-6">
-                <label for="confirmarSenhaUsuario" class="form-label">Confirmar Senha</label>
-                <input type="password" class="form-control" id="confirmarSenhaUsuario" required>
-              </div>
-            </div>
-
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label for="cpfUsuario" class="form-label">CPF</label>
-                <input type="text" class="form-control" id="cpfUsuario" placeholder="000.000.000-00" required>
-              </div>
-              <div class="col-md-6">
-                <label for="dataNascimentoUsuario" class="form-label">Data de Nascimento</label>
-                <input type="date" class="form-control" id="dataNascimentoUsuario" required>
-              </div>
-            </div>
-
-            <!-- Campos específicos para motoristas -->
-            <div id="camposMotorista" style="display: none;">
-              <div class="row mb-3">
-                <div class="col-md-6">
-                  <label for="cnhUsuario" class="form-label">Número da CNH</label>
-                  <input type="text" class="form-control" id="cnhUsuario">
-                </div>
-                <div class="col-md-6">
-                  <label for="categoriaCnhUsuario" class="form-label">Categoria da CNH</label>
-                  <select class="form-select" id="categoriaCnhUsuario">
-                    <option value="" selected disabled>Selecione</option>
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                    <option value="C">C</option>
-                    <option value="D">D</option>
-                    <option value="E">E</option>
-                    <option value="AB">AB</option>
-                  </select>
-                </div>
-              </div>
-              <div class="mb-3">
-                <label for="validadeCnhUsuario" class="form-label">Validade da CNH</label>
-                <input type="date" class="form-control" id="validadeCnhUsuario">
-              </div>
-            </div>
-
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label for="enderecoUsuario" class="form-label">Endereço</label>
-                <input type="text" class="form-control" id="enderecoUsuario" required>
-              </div>
-              <div class="col-md-6">
-                <label for="cidadeUsuario" class="form-label">Cidade</label>
-                <input type="text" class="form-control" id="cidadeUsuario" required>
+                <label for="senha" class="form-label">Senha</label>
+                <input type="password" class="form-control" id="senha"
+                  placeholder="Defina a senha (obrigatória no cadastro)">
+                <div class="form-text">Deixe em branco para não alterar a senha ao editar.</div>
               </div>
             </div>
 
             <div class="mb-3">
-              <label for="statusUsuario" class="form-label">Status</label>
-              <select class="form-select" id="statusUsuario" required>
-                <option value="ativo" selected>Ativo</option>
-                <option value="inativo">Inativo</option>
+              <label for="status" class="form-label">Status</label>
+              <select class="form-select" id="status" required>
+                <option value="ATIVO" selected>Ativo</option>
+                <option value="INATIVO">Inativo</option>
               </select>
             </div>
 
-            <div class="mb-3">
-              <label for="observacoesUsuario" class="form-label">Observações</label>
-              <textarea class="form-control" id="observacoesUsuario" rows="3"></textarea>
-            </div>
           </form>
         </div>
         <div class="modal-footer">
@@ -277,76 +215,53 @@
         </div>
         <div class="modal-body">
           <div class="usuario-details">
+            <!-- Header -->
             <div class="usuario-header mb-4">
               <div class="d-flex align-items-center">
-                <div class="avatar-lg admin">CO</div>
+                <div
+                  class="avatar-lg admin d-flex align-items-center justify-content-center rounded-circle bg-light border"
+                  style="width:64px;height:64px;">
+                  <span id="viewAvatarIniciais" class="fw-bold">??</span>
+                </div>
                 <div class="ms-3">
-                  <h4 id="viewNomeUsuario">Carlos Oliveira</h4>
-                  <span class="badge bg-primary" id="viewTipoUsuario">Administrador</span>
-                  <span class="badge bg-success ms-2" id="viewStatusUsuario">Ativo</span>
-                  <p class="text-muted mb-0 mt-1" id="viewDesdeUsuario">Usuário desde 10/01/2023</p>
+                  <h4 id="viewNomeUsuario" class="mb-1">—</h4>
+                  <span class="badge" id="viewTipoUsuario">—</span>
+                  <span class="badge ms-2" id="viewStatusUsuario">—</span>
+                  <p class="text-muted mb-0 mt-1" id="viewDesdeUsuario">Usuário desde —</p>
                 </div>
               </div>
             </div>
 
+            <!-- Blocos -->
             <div class="row mb-4">
               <div class="col-md-6">
                 <h5 class="border-bottom pb-2">Informações de Contato</h5>
-                <div class="mb-2">
-                  <strong>Email:</strong> <span id="viewEmailUsuario">carlos.oliveira@planetaagua.com</span>
-                </div>
-                <div class="mb-2">
-                  <strong>Telefone:</strong> <span id="viewTelefoneUsuario">(11) 98765-4321</span>
-                </div>
-                <div class="mb-2">
-                  <strong>Endereço:</strong> <span id="viewEnderecoUsuario">Rua das Flores, 123, São Paulo - SP</span>
-                </div>
+                <div class="mb-2"><strong>Email:</strong> <span id="viewEmailUsuario">—</span></div>
+                <div class="mb-2"><strong>Último Acesso:</strong> <span id="viewUltimoAcessoUsuario">—</span></div>
               </div>
               <div class="col-md-6">
-                <h5 class="border-bottom pb-2">Informações Pessoais</h5>
-                <div class="mb-2">
-                  <strong>CPF:</strong> <span id="viewCpfUsuario">123.456.789-00</span>
-                </div>
-                <div class="mb-2">
-                  <strong>Data de Nascimento:</strong> <span id="viewDataNascimentoUsuario">15/05/1985</span>
-                </div>
-                <div class="mb-2">
-                  <strong>Último Acesso:</strong> <span id="viewUltimoAcessoUsuario">Hoje, 08:15</span>
-                </div>
+                <h5 class="border-bottom pb-2">Metadados</h5>
+                <div class="mb-2"><strong>Criado em:</strong> <span id="viewCriadoEm">—</span></div>
+                <div class="mb-2"><strong>Atualizado em:</strong> <span id="viewAtualizadoEm">—</span></div>
               </div>
             </div>
 
             <!-- Informações específicas para motoristas -->
-            <div id="viewInfoMotorista" class="mb-4">
+            <div id="viewInfoMotorista" class="mb-4" style="display:none;">
               <h5 class="border-bottom pb-2">Informações de Motorista</h5>
-              <div class="row">
-                <div class="col-md-4">
-                  <div class="mb-2">
-                    <strong>CNH:</strong> <span id="viewCnhUsuario">12345678900</span>
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="mb-2">
-                    <strong>Categoria:</strong> <span id="viewCategoriaCnhUsuario">D</span>
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="mb-2">
-                    <strong>Validade:</strong> <span id="viewValidadeCnhUsuario">31/12/2025</span>
-                  </div>
-                </div>
-              </div>
+              <p class="text-muted mb-0">Sem campos adicionais cadastrados ainda.</p>
             </div>
 
             <div class="mb-4">
               <h5 class="border-bottom pb-2">Observações</h5>
-              <p id="viewObservacoesUsuario">Usuário responsável pela administração do sistema.</p>
+              <p id="viewObservacoesUsuario" class="mb-0 text-muted">—</p>
             </div>
 
-            <div class="mb-4">
+            <!-- Histórico (estático por enquanto) -->
+            <div class="mb-2">
               <h5 class="border-bottom pb-2">Histórico de Atividades</h5>
               <div class="table-container">
-                <table class="table table-sm">
+                <table class="table table-sm mb-0">
                   <thead>
                     <tr>
                       <th>Data</th>
@@ -354,36 +269,15 @@
                       <th>Detalhes</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody id="viewHistoricoTbody">
                     <tr>
-                      <td>15/05/2023 08:15</td>
-                      <td>Login no sistema</td>
-                      <td>IP: 192.168.1.100</td>
-                    </tr>
-                    <tr>
-                      <td>14/05/2023 17:30</td>
-                      <td>Cadastro de cliente</td>
-                      <td>Cliente: Maria Silva</td>
-                    </tr>
-                    <tr>
-                      <td>14/05/2023 15:45</td>
-                      <td>Atualização de produto</td>
-                      <td>Produto: Água Mineral 500ml</td>
-                    </tr>
-                    <tr>
-                      <td>14/05/2023 10:20</td>
-                      <td>Registro de venda</td>
-                      <td>Venda #1234 - R$ 45,00</td>
-                    </tr>
-                    <tr>
-                      <td>14/05/2023 08:10</td>
-                      <td>Login no sistema</td>
-                      <td>IP: 192.168.1.100</td>
+                      <td colspan="3" class="text-muted">Sem histórico disponível.</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
             </div>
+
           </div>
         </div>
         <div class="modal-footer">
@@ -393,7 +287,6 @@
       </div>
     </div>
   </div>
-
   <!-- Modal Confirmar Exclusão -->
   <div class="modal fade" id="deleteUsuarioModal" tabindex="-1" aria-labelledby="deleteUsuarioModalLabel"
     aria-hidden="true">
@@ -404,7 +297,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
         <div class="modal-body">
-          <p>Tem certeza que deseja excluir o usuário <strong id="deleteUsuarioNome">Carlos Oliveira</strong>?</p>
+          <p>Tem certeza que deseja excluir este usuário?</p>
           <p class="text-danger">Esta ação não pode ser desfeita.</p>
         </div>
         <div class="modal-footer">
@@ -415,6 +308,7 @@
     </div>
   </div>
 
+  <!-- JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../assets/js/sidebar.js"></script>
   <script src="../assets/js/usuarios.js"></script>
