@@ -349,11 +349,24 @@ document.addEventListener('DOMContentLoaded', function () {
       const cargo = selCargo?.value || 'FUNCIONARIO';
       const status = selStatus?.value || 'ATIVO';
 
+      // Regex simples para validar email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
       if (!nome || !email || (!id && !senha)) {
         safeAlert({
           icon: 'warning',
           title: 'Campos obrigatórios',
           text: id ? 'Nome e e-mail são obrigatórios.' : 'Nome, e-mail e senha são obrigatórios.',
+          confirmButtonColor: '#1e88e5'
+        });
+        return;
+      }
+
+      if (!emailRegex.test(email)) {
+        safeAlert({
+          icon: 'warning',
+          title: 'E-mail inválido',
+          text: 'Digite um e-mail no formato válido (ex: usuario@dominio.com)',
           confirmButtonColor: '#1e88e5'
         });
         return;
@@ -409,9 +422,53 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  console.log('API_BASE', API_BASE);
-  console.log('token?', !!getToken());
+  let listaUsuariosCache = [];
 
-  // Inicializa
+  async function renderTabela() {
+    try {
+      const lista = await listarUsuarios();
+      if (!Array.isArray(lista)) throw new Error('Resposta inesperada da API de usuários');
+      listaUsuariosCache = lista; // salva lista original
+      aplicarFiltros();
+    } catch (err) {
+      console.error(err);
+      safeAlert({
+        icon: 'error',
+        title: 'Falha ao carregar usuários',
+        text: err.message || 'Erro inesperado',
+        confirmButtonColor: '#1e88e5'
+      });
+    }
+  }
+
+  function aplicarFiltros() {
+    let filtrados = [...listaUsuariosCache];
+
+    const termo = $('#searchUsuario')?.value.trim().toLowerCase();
+    if (termo) {
+      filtrados = filtrados.filter(u =>
+        u.nome?.toLowerCase().includes(termo) ||
+        u.email?.toLowerCase().includes(termo)
+      );
+    }
+
+    const tipo = $('#filterTipo')?.value;
+    if (tipo && tipo !== 'todos') {
+      filtrados = filtrados.filter(u => String(u.cargo).toUpperCase() === tipo.toUpperCase());
+    }
+
+    const status = $('#filterStatus')?.value;
+    if (status && status !== 'todos') {
+      filtrados = filtrados.filter(u => String(u.status).toUpperCase() === status.toUpperCase());
+    }
+
+    if (tbody) tbody.innerHTML = filtrados.map(linhaUsuario).join('');
+    wireRowButtons();
+  }
+
+  $('#searchUsuario')?.addEventListener('input', aplicarFiltros);
+  $('#filterTipo')?.addEventListener('change', aplicarFiltros);
+  $('#filterStatus')?.addEventListener('change', aplicarFiltros);
+
   renderTabela();
 });

@@ -57,8 +57,14 @@ export const buscarUsuarioPorId = async (id: string) => {
     const usuario = await prisma.usuario.findUnique({
         where: { id: userId },
         select: {
-            id: true, nome: true, email: true, cargo: true,
-            status: true, criadoEm: true, atualizadoEm: true
+            id: true, 
+            nome: true, 
+            email: true, 
+            cargo: true,
+            status: true, 
+            criadoEm: true, 
+            atualizadoEm: true, 
+            ultimoLogin: true
         }
     });
     if (!usuario) throw new Error('Usuário não encontrado');
@@ -94,7 +100,7 @@ export const atualizarUsuarios = async (
         data.status = (Status as any)[s] ?? atual.status;
     }
     if (dados.senha) {
-        data.senhaHash = await bcrypt.hash(dados.senha, 12); 
+        data.senhaHash = await bcrypt.hash(dados.senha, 12);
     }
 
     Object.keys(data).forEach((k) => data[k] === undefined && delete data[k]);
