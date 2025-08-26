@@ -2,6 +2,17 @@ import { Request, Response, NextFunction, RequestHandler } from "express";
 import * as jwt from "jsonwebtoken";
 import { Cargo } from "@prisma/client";
 
+declare global {
+  namespace Express {
+    interface Request {
+      user?: {
+        id: number;
+        role?: Cargo;
+        nome?: string;
+      };
+    }
+  }
+}
 type RoleInput = Cargo | keyof typeof Cargo | Array<Cargo | keyof typeof Cargo>;
 
 function parseRoles(roles?: RoleInput): string[] | null {
@@ -9,6 +20,7 @@ function parseRoles(roles?: RoleInput): string[] | null {
   const arr = Array.isArray(roles) ? roles : [roles];
   return arr.map(r => String(r).toUpperCase());
 }
+
 
 export function auth(roles?: RoleInput): RequestHandler {
   const allowed = parseRoles(roles); // null => qualquer role
