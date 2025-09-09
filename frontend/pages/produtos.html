@@ -1,16 +1,14 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Planeta Água - Produtos</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-  <link rel="stylesheet" href="../assets/css/style.css">
-  <link rel="stylesheet" href="../assets/css/produtos.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="../assets/css/produtos.css"/>
 </head>
-
 <body>
   <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
@@ -19,73 +17,33 @@
       <h4>Planeta Água</h4>
     </div>
     <ul class="nav flex-column mt-4">
-      <li class="nav-item">
-        <a class="nav-link" href="index.html">
-          <i class="bi bi-speedometer2"></i>
-          <span class="nav-text">Dashboard</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="vendas.html">
-          <i class="bi bi-cash-coin"></i>
-          <span class="nav-text">Vendas</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="clientes.html">
-          <i class="bi bi-people"></i>
-          <span class="nav-text">Clientes</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link active" href="produtos.html">
-          <i class="bi bi-box-seam"></i>
-          <span class="nav-text">Produtos</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="usuarios.html">
-          <i class="bi bi-person-badge"></i>
-          <span class="nav-text">Usuários</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="despesas.html">
-          <i class="bi bi-wallet2"></i>
-          <span class="nav-text">Despesas</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="relatorios.html">
-          <i class="bi bi-bar-chart"></i>
-          <span class="nav-text">Relatórios</span>
-        </a>
-      </li>
+      <li class="nav-item"><a class="nav-link" href="index.html"><i class="bi bi-speedometer2"></i><span class="nav-text">Dashboard</span></a></li>
+      <li class="nav-item"><a class="nav-link" href="vendas.html"><i class="bi bi-cash-coin"></i><span class="nav-text">Vendas</span></a></li>
+      <li class="nav-item"><a class="nav-link" href="clientes.html"><i class="bi bi-people"></i><span class="nav-text">Clientes</span></a></li>
+      <li class="nav-item"><a class="nav-link active" href="produtos.html"><i class="bi bi-box-seam"></i><span class="nav-text">Produtos</span></a></li>
+      <li class="nav-item"><a class="nav-link" href="usuarios.html"><i class="bi bi-person-badge"></i><span class="nav-text">Usuários</span></a></li>
+      <li class="nav-item"><a class="nav-link" href="despesas.html"><i class="bi bi-wallet2"></i><span class="nav-text">Despesas</span></a></li>
+      <li class="nav-item"><a class="nav-link" href="relatorios.html"><i class="bi bi-bar-chart"></i><span class="nav-text">Relatórios</span></a></li>
     </ul>
     <div class="sidebar-footer">
       <a class="nav-link" href="login.html">
-        <i class="bi bi-box-arrow-left"></i>
-        <span class="nav-text">Sair</span>
+        <i class="bi bi-box-arrow-left"></i><span class="nav-text">Sair</span>
       </a>
     </div>
   </div>
 
-  <!-- Sidebar Toggle Button -->
-  <button class="sidebar-toggle" id="sidebarToggle">
-    <i class="bi bi-list"></i>
-  </button>
+  <!-- Toggle sidebar -->
+  <button class="sidebar-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
 
-  <!-- Main Content -->
+  <!-- Main -->
   <div class="main-content" id="mainContent">
     <div class="container-fluid">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0">Produtos</h2>
-        <button class="btn btn-primary d-lg-none" id="mobileMenuBtn">
-          <i class="bi bi-list"></i>
-        </button>
+        <button class="btn btn-primary d-lg-none" id="mobileMenuBtn"><i class="bi bi-list"></i></button>
       </div>
 
-      <!-- Filtros e Busca -->
+      <!-- Filtros -->
       <div class="card mb-4">
         <div class="card-body">
           <div class="row g-3">
@@ -96,11 +54,12 @@
               </div>
             </div>
             <div class="col-md-3">
+              <!-- usamos o TEXTO da opção como 'tipo' -->
               <select class="form-select" id="filterCategoria">
                 <option value="todos" selected>Todas as categorias</option>
                 <option value="agua">Água Mineral</option>
-                <option value="galao">Galões</option>
-                <option value="acessorios">Acessórios</option>
+                <option value="galao">Galão</option>
+                <option value="acessorios">Acessório</option>
               </select>
             </div>
             <div class="col-md-3">
@@ -115,529 +74,135 @@
         </div>
       </div>
 
-      <!-- Botão Adicionar Produto -->
+      <!-- Top bar (resumo + add) -->
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <span class="text-muted">Mostrando 1-10 de 28 produtos</span>
-        </div>
-        <button class="btn btn-primary" id="btnAddProduto">
-          <i class="bi bi-plus-lg me-1"></i> Adicionar Produto
-        </button>
+        <span id="produtosResumo" class="text-muted"></span>
+        <button class="btn btn-primary" id="btnAddProduto"><i class="bi bi-plus-lg me-1"></i> Adicionar Produto</button>
       </div>
 
-      <!-- Grade de Produtos -->
-      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4 mb-4">
-        <!-- Produto 1 -->
-        <div class="col">
-          <div class="card h-100 produto-card">
-            <div class="card-body">
-              <div class="produto-img-container mb-3">
-                <img src="../assets/images/agua-500ml.jpg" alt="Água Mineral 500ml" class="produto-img">
-                <span class="badge bg-success produto-badge">Estoque Alto</span>
-              </div>
-              <h5 class="card-title">Água Mineral 500ml</h5>
-              <p class="card-text text-muted">Água Mineral</p>
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="produto-preco">R$ 2,50</span>
-                <span class="produto-estoque">450 unidades</span>
-              </div>
-              <div class="produto-actions">
-                <button class="btn btn-sm btn-outline-primary btn-view" data-id="1">
-                  <i class="bi bi-eye"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-secondary btn-edit" data-id="1">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-danger btn-delete" data-id="1">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+      <!-- Grid dinâmico (SEM mocks) -->
+      <div id="produtosGrid" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4 mb-4"></div>
 
-        <!-- Produto 2 -->
-        <div class="col">
-          <div class="card h-100 produto-card">
-            <div class="card-body">
-              <div class="produto-img-container mb-3">
-                <img src="../assets/images/galao.avif" alt="Galão 20L" class="produto-img">
-                <span class="badge bg-warning text-dark produto-badge">Estoque Normal</span>
-              </div>
-              <h5 class="card-title">Galão 20L</h5>
-              <p class="card-text text-muted">Galão</p>
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="produto-preco">R$ 15,00</span>
-                <span class="produto-estoque">85 unidades</span>
-              </div>
-              <div class="produto-actions">
-                <button class="btn btn-sm btn-outline-primary btn-view" data-id="2">
-                  <i class="bi bi-eye"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-secondary btn-edit" data-id="2">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-danger btn-delete" data-id="2">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Produto 3 -->
-        <div class="col">
-          <div class="card h-100 produto-card">
-            <div class="card-body">
-              <div class="produto-img-container mb-3">
-                <img src="../assets/images/agua-1.5l.jpg" alt="Água Mineral 1,5L" class="produto-img">
-                <span class="badge bg-warning text-dark produto-badge">Estoque Normal</span>
-              </div>
-              <h5 class="card-title">Água Mineral 1,5L</h5>
-              <p class="card-text text-muted">Água Mineral</p>
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="produto-preco">R$ 5,00</span>
-                <span class="produto-estoque">120 unidades</span>
-              </div>
-              <div class="produto-actions">
-                <button class="btn btn-sm btn-outline-primary btn-view" data-id="3">
-                  <i class="bi bi-eye"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-secondary btn-edit" data-id="3">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-danger btn-delete" data-id="3">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Produto 4 -->
-        <div class="col">
-          <div class="card h-100 produto-card">
-            <div class="card-body">
-              <div class="produto-img-container mb-3">
-                <img src="../assets/images/suporte-galao.jpg" alt="Suporte para Galão" class="produto-img">
-                <span class="badge bg-danger produto-badge">Estoque Baixo</span>
-              </div>
-              <h5 class="card-title">Suporte para Galão</h5>
-              <p class="card-text text-muted">Acessório</p>
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="produto-preco">R$ 35,90</span>
-                <span class="produto-estoque">12 unidades</span>
-              </div>
-              <div class="produto-actions">
-                <button class="btn btn-sm btn-outline-primary btn-view" data-id="4">
-                  <i class="bi bi-eye"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-secondary btn-edit" data-id="4">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-danger btn-delete" data-id="4">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Produto 5 -->
-        <div class="col">
-          <div class="card h-100 produto-card">
-            <div class="card-body">
-              <div class="produto-img-container mb-3">
-                <img src="../assets/images/agua-gas-500ml.jpg" alt="Água Mineral com Gás 500ml" class="produto-img">
-                <span class="badge bg-danger produto-badge">Estoque Baixo</span>
-              </div>
-              <h5 class="card-title">Água Mineral com Gás 500ml</h5>
-              <p class="card-text text-muted">Água Mineral</p>
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="produto-preco">R$ 3,00</span>
-                <span class="produto-estoque">85 unidades</span>
-              </div>
-              <div class="produto-actions">
-                <button class="btn btn-sm btn-outline-primary btn-view" data-id="5">
-                  <i class="bi bi-eye"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-secondary btn-edit" data-id="5">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-danger btn-delete" data-id="5">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Produto 6 -->
-        <div class="col">
-          <div class="card h-100 produto-card">
-            <div class="card-body">
-              <div class="produto-img-container mb-3">
-                <img src="../assets/images/bombona-5l.jpg" alt="Bombona 5L" class="produto-img">
-                <span class="badge bg-warning text-dark produto-badge">Estoque Normal</span>
-              </div>
-              <h5 class="card-title">Bombona 5L</h5>
-              <p class="card-text text-muted">Água Mineral</p>
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="produto-preco">R$ 22,50</span>
-                <span class="produto-estoque">45 unidades</span>
-              </div>
-              <div class="produto-actions">
-                <button class="btn btn-sm btn-outline-primary btn-view" data-id="6">
-                  <i class="bi bi-eye"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-secondary btn-edit" data-id="6">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-danger btn-delete" data-id="6">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Produto 7 -->
-        <div class="col">
-          <div class="card h-100 produto-card">
-            <div class="card-body">
-              <div class="produto-img-container mb-3">
-                <img src="../assets/images/torneira-bebedouro.jpg" alt="Torneira para Bebedouro" class="produto-img">
-                <span class="badge bg-danger produto-badge">Estoque Baixo</span>
-              </div>
-              <h5 class="card-title">Torneira para Bebedouro</h5>
-              <p class="card-text text-muted">Acessório</p>
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="produto-preco">R$ 12,90</span>
-                <span class="produto-estoque">15 unidades</span>
-              </div>
-              <div class="produto-actions">
-                <button class="btn btn-sm btn-outline-primary btn-view" data-id="7">
-                  <i class="bi bi-eye"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-secondary btn-edit" data-id="7">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-danger btn-delete" data-id="7">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Produto 8 -->
-        <div class="col">
-          <div class="card h-100 produto-card">
-            <div class="card-body">
-              <div class="produto-img-container mb-3">
-                <img src="../assets/images/bebedouro.jpg" alt="Bebedouro de Mesa" class="produto-img">
-                <span class="badge bg-success produto-badge">Estoque Alto</span>
-              </div>
-              <h5 class="card-title">Bebedouro de Mesa</h5>
-              <p class="card-text text-muted">Acessório</p>
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="produto-preco">R$ 189,90</span>
-                <span class="produto-estoque">30 unidades</span>
-              </div>
-              <div class="produto-actions">
-                <button class="btn btn-sm btn-outline-primary btn-view" data-id="8">
-                  <i class="bi bi-eye"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-secondary btn-edit" data-id="8">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-danger btn-delete" data-id="8">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Paginação -->
+      <!-- Paginação dinâmico -->
       <nav aria-label="Navegação de página" class="mt-4">
-        <ul class="pagination justify-content-center">
-          <li class="page-item disabled">
-            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Anterior</a>
-          </li>
-          <li class="page-item active"><a class="page-link" href="#">1</a></li>
-          <li class="page-item"><a class="page-link" href="#">2</a></li>
-          <li class="page-item"><a class="page-link" href="#">3</a></li>
-          <li class="page-item">
-            <a class="page-link" href="#">Próximo</a>
-          </li>
-        </ul>
+        <ul class="pagination justify-content-center"></ul>
       </nav>
     </div>
   </div>
 
-  <!-- Modal Adicionar/Editar Produto -->
+  <!-- Modal Adicionar/Editar Produto (somente campos que existem no backend) -->
   <div class="modal fade" id="produtoModal" tabindex="-1" aria-labelledby="produtoModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="produtoModalLabel">Adicionar Produto</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-        </div>
-        <div class="modal-body">
-          <form id="produtoForm">
-            <div class="row mb-3">
-              <div class="col-md-8">
-                <label for="nomeProduto" class="form-label">Nome do Produto</label>
-                <input type="text" class="form-control" id="nomeProduto" required>
-              </div>
-              <div class="col-md-4">
-                <label for="categoriaProduto" class="form-label">Categoria</label>
-                <select class="form-select" id="categoriaProduto" required>
-                  <option value="" selected disabled>Selecione</option>
-                  <option value="agua">Água Mineral</option>
-                  <option value="galao">Galão</option>
-                  <option value="acessorios">Acessório</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="row mb-3">
-              <div class="col-md-4">
-                <label for="precoProduto" class="form-label">Preço (R$)</label>
-                <input type="number" class="form-control" id="precoProduto" step="0.01" min="0" required>
-              </div>
-              <div class="col-md-4">
-                <label for="custoProduto" class="form-label">Custo (R$)</label>
-                <input type="number" class="form-control" id="custoProduto" step="0.01" min="0" required>
-              </div>
-              <div class="col-md-4">
-                <label for="codigoProduto" class="form-label">Código</label>
-                <input type="text" class="form-control" id="codigoProduto" required>
-              </div>
-            </div>
-
-            <div class="row mb-3">
-              <div class="col-md-4">
-                <label for="estoqueProduto" class="form-label">Quantidade em Estoque</label>
-                <input type="number" class="form-control" id="estoqueProduto" min="0" required>
-              </div>
-              <div class="col-md-4">
-                <label for="estoqueMinimoProduto" class="form-label">Estoque Mínimo</label>
-                <input type="number" class="form-control" id="estoqueMinimoProduto" min="0" required>
-              </div>
-              <div class="col-md-4">
-                <label for="unidadeProduto" class="form-label">Unidade</label>
-                <select class="form-select" id="unidadeProduto" required>
-                  <option value="" selected disabled>Selecione</option>
-                  <option value="un">Unidade</option>
-                  <option value="cx">Caixa</option>
-                  <option value="pct">Pacote</option>
-                  <option value="kg">Quilograma</option>
-                  <option value="l">Litro</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="mb-3">
-              <label for="descricaoProduto" class="form-label">Descrição</label>
-              <textarea class="form-control" id="descricaoProduto" rows="3"></textarea>
-            </div>
-
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label for="validadeProduto" class="form-label">Validade</label>
-                <input type="date" class="form-control" id="validadeProduto">
-              </div>
-              <div class="col-md-6">
-                <label for="fornecedorProduto" class="form-label">Fornecedor</label>
-                <select class="form-select" id="fornecedorProduto">
-                  <option value="" selected disabled>Selecione</option>
-                  <option value="1">Água Cristalina Ltda</option>
-                  <option value="2">Distribuidora Águas do Brasil</option>
-                  <option value="3">Acessórios Hidráulicos SA</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="mb-3">
-              <label for="imagemProduto" class="form-label">Imagem do Produto</label>
-              <input type="file" class="form-control" id="imagemProduto">
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="button" class="btn btn-primary" id="btnSalvarProduto">Salvar</button>
-        </div>
+    <div class="modal-dialog modal-lg"><div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="produtoModalLabel">Adicionar Produto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
-    </div>
-  </div>
-
-  <!-- Modal Visualizar Produto -->
-  <div class="modal fade" id="viewProdutoModal" tabindex="-1" aria-labelledby="viewProdutoModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="viewProdutoModalLabel">Detalhes do Produto</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-        </div>
-        <div class="modal-body">
-          <div class="produto-details">
-            <div class="row mb-4">
-              <div class="col-md-4">
-                <div class="produto-img-lg-container">
-                  <img src="../assets/images/agua-500ml.jpg" alt="Água Mineral 500ml" class="produto-img-lg"
-                    id="viewImagemProduto">
-                  <span class="badge bg-success produto-badge-lg" id="viewEstoqueBadge">Estoque Alto</span>
-                </div>
-              </div>
-              <div class="col-md-8">
-                <h4 id="viewNomeProduto">Água Mineral 500ml</h4>
-                <p class="text-muted" id="viewCategoriaProduto">Água Mineral</p>
-                <div class="d-flex align-items-center mb-2">
-                  <span class="produto-preco-lg me-3" id="viewPrecoProduto">R$ 2,50</span>
-                  <span class="text-muted">Custo: <span id="viewCustoProduto">R$ 1,20</span></span>
-                </div>
-                <div class="mb-2">
-                  <strong>Código:</strong> <span id="viewCodigoProduto">AG500</span>
-                </div>
-                <div class="mb-2">
-                  <strong>Estoque:</strong> <span id="viewEstoqueProduto">450 unidades</span>
-                  (Mínimo: <span id="viewEstoqueMinimoProduto">100</span>)
-                </div>
-                <div class="mb-2">
-                  <strong>Validade:</strong> <span id="viewValidadeProduto">30/06/2024</span>
-                </div>
-                <div class="mb-2">
-                  <strong>Fornecedor:</strong> <span id="viewFornecedorProduto">Água Cristalina Ltda</span>
-                </div>
-              </div>
+      <div class="modal-body">
+        <form id="produtoForm">
+          <div class="row mb-3">
+            <div class="col-md-8">
+              <label for="nomeProduto" class="form-label">Nome do Produto</label>
+              <input type="text" class="form-control" id="nomeProduto" required>
             </div>
-
-            <div class="mb-4">
-              <h5 class="border-bottom pb-2">Descrição</h5>
-              <p id="viewDescricaoProduto">Água mineral natural sem gás, embalagem de 500ml, pH neutro, leve e
-                refrescante.</p>
-            </div>
-
-            <div class="mb-4">
-              <h5 class="border-bottom pb-2">Histórico de Vendas</h5>
-              <div class="table-container">
-                <table class="table table-sm">
-                  <thead>
-                    <tr>
-                      <th>Data</th>
-                      <th>Cliente</th>
-                      <th>Quantidade</th>
-                      <th class="text-end">Valor</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>15/05/2023</td>
-                      <td>João Oliveira</td>
-                      <td>24 unidades</td>
-                      <td class="text-end">R$ 60,00</td>
-                    </tr>
-                    <tr>
-                      <td>14/05/2023</td>
-                      <td>Carlos Ferreira</td>
-                      <td>12 unidades</td>
-                      <td class="text-end">R$ 30,00</td>
-                    </tr>
-                    <tr>
-                      <td>10/05/2023</td>
-                      <td>Restaurante Lagoa</td>
-                      <td>48 unidades</td>
-                      <td class="text-end">R$ 120,00</td>
-                    </tr>
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <td colspan="3" class="text-end fw-bold">Total (últimos 30 dias)</td>
-                      <td class="text-end fw-bold">R$ 1.250,00</td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-            </div>
-
-            <div class="mb-4">
-              <h5 class="border-bottom pb-2">Histórico de Estoque</h5>
-              <div class="table-container">
-                <table class="table table-sm">
-                  <thead>
-                    <tr>
-                      <th>Data</th>
-                      <th>Tipo</th>
-                      <th>Quantidade</th>
-                      <th>Responsável</th>
-                      <th>Observação</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>12/05/2023</td>
-                      <td>Entrada</td>
-                      <td>+200 unidades</td>
-                      <td>Maria Silva</td>
-                      <td>Compra do fornecedor</td>
-                    </tr>
-                    <tr>
-                      <td>10/05/2023</td>
-                      <td>Saída</td>
-                      <td>-48 unidades</td>
-                      <td>Carlos Oliveira</td>
-                      <td>Venda para Restaurante Lagoa</td>
-                    </tr>
-                    <tr>
-                      <td>05/05/2023</td>
-                      <td>Entrada</td>
-                      <td>+300 unidades</td>
-                      <td>Maria Silva</td>
-                      <td>Compra do fornecedor</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+            <div class="col-md-4">
+              <label for="categoriaProduto" class="form-label">Categoria</label>
+              <select class="form-select" id="categoriaProduto">
+                <option value="" selected disabled>Selecione</option>
+                <option>Água Mineral</option>
+                <option>Galão</option>
+                <option>Acessório</option>
+              </select>
             </div>
           </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-          <button type="button" class="btn btn-primary" id="btnEditarProdutoView">Editar</button>
+
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <label for="precoProduto" class="form-label">Preço (R$)</label>
+              <input type="number" class="form-control" id="precoProduto" step="0.01" min="0" required>
+            </div>
+            <div class="col-md-4">
+              <label for="estoqueProduto" class="form-label">Estoque</label>
+              <input type="number" class="form-control" id="estoqueProduto" min="0" value="0">
+            </div>
+            <div class="col-md-4">
+              <label for="validadeProduto" class="form-label">Validade</label>
+              <input type="date" class="form-control" id="validadeProduto">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="btnSalvarProduto">Salvar</button>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- Modal Visualizar Produto (placeholders apenas) -->
+  <div class="modal fade" id="viewProdutoModal" tabindex="-1" aria-labelledby="viewProdutoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg"><div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="viewProdutoModalLabel">Detalhes do Produto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <div class="produto-details">
+          <div class="row mb-4">
+            <div class="col-md-4">
+              <div class="produto-img-lg-container d-flex align-items-center justify-content-center border rounded" style="height:180px;">
+                <!-- badge de estoque substituído via JS -->
+                <span id="viewEstoqueBadge" class="badge bg-secondary">-</span>
+              </div>
+            </div>
+            <div class="col-md-8">
+              <h4 id="viewNomeProduto"></h4>
+              <p class="text-muted" id="viewCategoriaProduto"></p>
+              <div class="d-flex align-items-center mb-2">
+                <span class="produto-preco-lg me-3" id="viewPrecoProduto"></span>
+              </div>
+              <div class="mb-2"><strong>Estoque:</strong> <span id="viewEstoqueProduto">-</span></div>
+              <div class="mb-2"><strong>Validade:</strong> <span id="viewValidadeProduto">-</span></div>
+            </div>
+          </div>
+
+          <!-- Sessões que eram mockadas ficam como “Sem dados” -->
+          <div class="mb-4">
+            <h5 class="border-bottom pb-2">Histórico de Vendas</h5>
+            <div class="text-muted small">Sem dados</div>
+          </div>
+          <div class="mb-4">
+            <h5 class="border-bottom pb-2">Histórico de Estoque</h5>
+            <div class="text-muted small">Sem dados</div>
+          </div>
         </div>
       </div>
-    </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        <button type="button" class="btn btn-primary" id="btnEditarProdutoView">Editar</button>
+      </div>
+    </div></div>
   </div>
 
   <!-- Modal Confirmar Exclusão -->
-  <div class="modal fade" id="deleteProdutoModal" tabindex="-1" aria-labelledby="deleteProdutoModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="deleteProdutoModalLabel">Confirmar Exclusão</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-        </div>
-        <div class="modal-body">
-          <p>Tem certeza que deseja excluir o produto <strong id="deleteProdutoNome">Água Mineral 500ml</strong>?</p>
-          <p class="text-danger">Esta ação não pode ser desfeita.</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="button" class="btn btn-danger" id="btnConfirmarExclusao">Excluir</button>
-        </div>
+  <div class="modal fade" id="deleteProdutoModal" tabindex="-1" aria-labelledby="deleteProdutoModalLabel" aria-hidden="true">
+    <div class="modal-dialog"><div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteProdutoModalLabel">Confirmar Exclusão</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
-    </div>
+      <div class="modal-body">
+        <p>Tem certeza que deseja excluir o produto <strong id="deleteProdutoNome"></strong>?</p>
+        <p class="text-danger">Esta ação não pode ser desfeita.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="btnConfirmarExclusao">Excluir</button>
+      </div>
+    </div></div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../assets/js/sidebar.js"></script>
   <script src="../assets/js/produtos.js"></script>
 </body>
-
 </html>

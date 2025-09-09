@@ -38,7 +38,6 @@ model Usuario {
   @@map("tb_usuario")
 }
 
-// ===== Cliente =====
 model Cliente {
   id           Int      @id @default(autoincrement()) @map("id_cliente")
   nome         String   @db.VarChar(150)
@@ -52,4 +51,15 @@ model Cliente {
 
   @@index([cpfCnpj])
   @@map("tb_cliente")
+}
+
+model Produto {
+  id           Int       @id @default(autoincrement()) @map("id_produto")
+  nome         String    @db.VarChar(150)
+  tipo         String?   @db.VarChar(100) 
+  validade     DateTime? 
+  preco        Decimal   @db.Decimal(10, 2)
+  estoqueAtual Int       @default(0) @map("estoque_atual")
+  criadoEm     DateTime  @default(now()) @map("criado_em")
+  atualizadoEm DateTime  @updatedAt @map("atualizado_em")
 }
