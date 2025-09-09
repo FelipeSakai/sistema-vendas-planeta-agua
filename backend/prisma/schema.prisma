@@ -39,27 +39,46 @@ model Usuario {
 }
 
 model Cliente {
-  id           Int      @id @default(autoincrement()) @map("id_cliente")
-  nome         String   @db.VarChar(150)
-  cpfCnpj      String?  @unique @map("cpf_cnpj") @db.VarChar(20)
-  telefone     String?  @db.VarChar(20)
-  email        String?  @unique @db.VarChar(100)
-  endereco     String?  @db.Text
-  status       Status   @default(ATIVO)
-  criadoEm     DateTime @default(now()) @map("criado_em")
-  atualizadoEm DateTime @updatedAt @map("atualizado_em")
+  id                     Int                      @id @default(autoincrement()) @map("id_cliente")
+  nome                   String                   @db.VarChar(150)
+  cpfCnpj                String?                  @unique @map("cpf_cnpj") @db.VarChar(20)
+  telefone               String?                  @db.VarChar(20)
+  email                  String?                  @unique @db.VarChar(100)
+  endereco               String?                  @db.Text
+  status                 Status                   @default(ATIVO)
+  criadoEm               DateTime                 @default(now()) @map("criado_em")
+  atualizadoEm           DateTime                 @updatedAt @map("atualizado_em")
+  ClienteProdutoValidade ClienteProdutoValidade[]
 
   @@index([cpfCnpj])
   @@map("tb_cliente")
 }
 
 model Produto {
-  id           Int       @id @default(autoincrement()) @map("id_produto")
-  nome         String    @db.VarChar(150)
-  tipo         String?   @db.VarChar(100) 
-  validade     DateTime? 
-  preco        Decimal   @db.Decimal(10, 2)
-  estoqueAtual Int       @default(0) @map("estoque_atual")
-  criadoEm     DateTime  @default(now()) @map("criado_em")
-  atualizadoEm DateTime  @updatedAt @map("atualizado_em")
+  id                     Int                      @id @default(autoincrement()) @map("id_produto")
+  nome                   String                   @db.VarChar(150)
+  tipo                   String?                  @db.VarChar(100)
+  preco                  Decimal                  @db.Decimal(10, 2)
+  estoqueAtual           Int                      @default(0) @map("estoque_atual")
+  imageUrl               String?                  @map("imagem_url")
+  criadoEm               DateTime                 @default(now()) @map("criado_em")
+  atualizadoEm           DateTime                 @updatedAt @map("atualizado_em")
+  ClienteProdutoValidade ClienteProdutoValidade[]
+}
+
+model ClienteProdutoValidade {
+  id         Int      @id @default(autoincrement())
+  clienteId  Int      @map("id_cliente")
+  produtoId  Int      @map("id_produto")
+  validade   DateTime
+  quantidade Int?     @default(1)
+  observacao String?
+
+  cliente Cliente @relation(fields: [clienteId], references: [id])
+  produto Produto @relation(fields: [produtoId], references: [id])
+
+  criadoEm     DateTime @default(now()) @map("criado_em")
+  atualizadoEm DateTime @updatedAt @map("atualizado_em")
+
+  @@unique([clienteId, produtoId], map: "uq_cliente_produto_validade") // 1 registro vigente por cliente/produto
 }

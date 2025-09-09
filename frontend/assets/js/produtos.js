@@ -27,7 +27,7 @@
       const msg = data?.mensagem || data?.error || `Erro ${res.status}`;
       throw new Error(msg);
     }
-    return data; 
+    return data;
   }
 
   const state = {
@@ -35,7 +35,7 @@
     perPage: 12,
     totalPages: 1,
     geral: '',
-    tipo: 'todos',        
+    tipo: 'todos',
     estoqueFiltro: 'todos',
     currentEditId: null,
     currentViewId: null,
@@ -58,17 +58,22 @@
   const $produtoForm = document.getElementById('produtoForm');
   const $produtoModalLabel = document.getElementById('produtoModalLabel');
   const $nome = document.getElementById('nomeProduto');
-  const $categoria = document.getElementById('categoriaProduto'); 
+  const $categoria = document.getElementById('categoriaProduto');
   const $preco = document.getElementById('precoProduto');
-  const $validade = document.getElementById('validadeProduto');
+  // const $validade = document.getElementById('validadeProduto');
   const $estoque = document.getElementById('estoqueProduto');
   const $btnSalvar = document.getElementById('btnSalvarProduto');
+  const $imgInput = document.getElementById('imagemProduto');
+  const $preview = document.getElementById('previewImagem');
+  const $wrapRemover = document.getElementById('wrapRemoverImg');
+  const $remover = document.getElementById('removerImagem');
+
 
   const $viewNome = document.getElementById('viewNomeProduto');
   const $viewCategoria = document.getElementById('viewCategoriaProduto');
   const $viewPreco = document.getElementById('viewPrecoProduto');
   const $viewEstoque = document.getElementById('viewEstoqueProduto');
-  const $viewValidade = document.getElementById('viewValidadeProduto');
+  // const $viewValidade = document.getElementById('viewValidadeProduto');
   const $viewEstoqueBadge = document.getElementById('viewEstoqueBadge');
 
   const $deleteNome = document.getElementById('deleteProdutoNome');
@@ -76,7 +81,7 @@
 
   const $sair = document.querySelector('.sidebar-footer .nav-link[href*="login"]');
   $sair?.addEventListener('click', (e) => {
-    try { localStorage.removeItem('token'); } catch {}
+    try { localStorage.removeItem('token'); } catch { }
   });
 
   function formatMoney(v) {
@@ -101,17 +106,28 @@
   function estoqueBadgeHtml(qtd) {
     const nivel = estoqueNivel(qtd);
     const map = {
-      baixo:  { cls: 'bg-danger', label: 'Estoque Baixo' },
+      baixo: { cls: 'bg-danger', label: 'Estoque Baixo' },
       normal: { cls: 'bg-warning text-dark', label: 'Estoque Normal' },
-      alto:   { cls: 'bg-success', label: 'Estoque Alto' },
+      alto: { cls: 'bg-success', label: 'Estoque Alto' },
     };
     const x = map[nivel];
     return `<span class="badge ${x.cls} produto-badge">${x.label}</span>`;
   }
 
+  $imgInput?.addEventListener('change', () => {
+    const f = $imgInput.files?.[0];
+    if (f) {
+      $preview.src = URL.createObjectURL(f);
+      $preview.classList.remove('d-none');
+      if ($remover) $remover.checked = false;
+    }
+  });
+
+
   function renderCards(list) {
     if (!$grid) return;
     let data = list;
+
     if (state.estoqueFiltro !== 'todos') {
       data = list.filter(p => estoqueNivel(p.estoqueAtual) === state.estoqueFiltro);
     }
@@ -120,41 +136,50 @@
       const tipo = p.tipo || '-';
       const preco = formatMoney(p.preco);
       const estoqueTxt = `${p.estoqueAtual ?? 0} unidades`;
+      let imgUrl = '';
+      if (p.imageUrl) {
+        imgUrl = p.imageUrl.startsWith('http') ? p.imageUrl : `${API_BASE}${p.imageUrl}`;
+      }
+      const imgHtml = imgUrl
+        ? `<img src="${imgUrl}" alt="${p.nome}" class="produto-img mb-2" style="max-width:100%;max-height:120px;object-fit:contain;">`
+        : `<div class="produto-img-placeholder mb-2" style="width:100%;height:120px;background:#eee;display:flex;align-items:center;justify-content:center;color:#aaa;">Sem imagem</div>`;
+
       return `
-        <div class="col">
-          <div class="card h-100 produto-card">
-            <div class="card-body">
-              <div class="produto-img-container mb-3">
-                ${estoqueBadgeHtml(p.estoqueAtual)}
-              </div>
-              <h5 class="card-title">${p.nome}</h5>
-              <p class="card-text text-muted">${tipo}</p>
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="produto-preco">${preco}</span>
-                <span class="produto-estoque">${estoqueTxt}</span>
-              </div>
-              <div class="produto-actions">
-                <button class="btn btn-sm btn-outline-primary btn-view" data-id="${p.id}">
-                  <i class="bi bi-eye"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-secondary btn-edit" data-id="${p.id}">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${p.id}" data-nome="${p.nome}">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
+      <div class="col">
+        <div class="card h-100 produto-card">
+          <div class="card-body">
+            <div class="produto-img-container mb-3">
+              ${imgHtml}
+              ${estoqueBadgeHtml(p.estoqueAtual)}
+            </div>
+            <h5 class="card-title">${p.nome}</h5>
+            <p class="card-text text-muted">${tipo}</p>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="produto-preco">${preco}</span>
+              <span class="produto-estoque">${estoqueTxt}</span>
+            </div>
+            <div class="produto-actions">
+              <button class="btn btn-sm btn-outline-primary btn-view" data-id="${p.id}">
+                <i class="bi bi-eye"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-secondary btn-edit" data-id="${p.id}">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${p.id}" data-nome="${p.nome}">
+                <i class="bi bi-trash"></i>
+              </button>
             </div>
           </div>
         </div>
-      `;
+      </div>
+    `;
     }).join('');
 
     $grid.innerHTML = cards || `
-      <div class="col">
-        <div class="text-center text-muted py-4">Nenhum produto encontrado</div>
-      </div>
-    `;
+    <div class="col">
+      <div class="text-center text-muted py-4">Nenhum produto encontrado</div>
+    </div>
+  `;
   }
 
   function renderResumo(page, perPage, total) {
@@ -193,7 +218,7 @@
     params.set('perPage', String(state.perPage));
 
     const data = await api('GET', `/api/produtos?${params.toString()}`);
-    const payload = data?.dados || data; 
+    const payload = data?.dados || data;
 
     renderCards(payload.data || []);
     renderResumo(payload.page, payload.perPage, payload.total);
@@ -207,19 +232,26 @@
     state.currentEditId = null;
   }
 
-  function montarPayload() {
-    const tipoTexto = $categoria.selectedOptions[0]
-      ? $categoria.selectedOptions[0].textContent.trim()
+  function montarFormData() {
+    const fd = new FormData();
+
+    const tipoTexto = document.getElementById('categoriaProduto').selectedOptions[0]
+      ? document.getElementById('categoriaProduto').selectedOptions[0].textContent.trim()
       : '';
 
-    return {
-      nome: ($nome.value || '').trim(),
-      tipo: tipoTexto || null,
-      preco: Number($preco.value),
-      validade: $validade.value ? $validade.value : null, 
-      estoqueAtual: Number($estoque.value || 0),
-    };
+    fd.append('nome', (document.getElementById('nomeProduto').value || '').trim());
+    if (tipoTexto) fd.append('tipo', tipoTexto);
+    fd.append('preco', String(document.getElementById('precoProduto').value || '0'));
+    fd.append('estoqueAtual', String(document.getElementById('estoqueProduto').value || '0'));
+
+    const file = $imgInput?.files?.[0];
+    if (file) fd.append('imagem', file);
+
+    if ($remover?.checked) fd.append('imageUrl', '');
+
+    return fd;
   }
+
 
   $search?.addEventListener('input', () => {
     state.geral = $search.value.trim();
@@ -236,7 +268,7 @@
   });
 
   $filterEstoque?.addEventListener('change', () => {
-    state.estoqueFiltro = $filterEstoque.value; 
+    state.estoqueFiltro = $filterEstoque.value;
     state.page = 1;
     loadProdutos().catch(err => alert(err.message));
   });
@@ -248,19 +280,20 @@
 
   $btnSalvar?.addEventListener('click', async () => {
     try {
-      if (!$produtoForm.checkValidity()) {
-        $produtoForm.reportValidity();
-        return;
-      }
+      if (!$produtoForm.checkValidity()) { $produtoForm.reportValidity(); return; }
 
-      const payload = montarPayload();
-      if (!payload.nome) throw new Error('Nome é obrigatório.');
-      if (Number.isNaN(Number(payload.preco))) throw new Error('Preço inválido.');
+      const fd = montarFormData();
+      const token = (localStorage.getItem('token') || '').replace(/^Bearer\s+/i, '').trim();
+      const headers = { 'Authorization': `Bearer ${token}` };
 
       if (state.currentEditId) {
-        await api('PUT', `/api/produtos/${state.currentEditId}`, payload);
+        const r = await fetch(`${API_BASE}/api/produtos/${state.currentEditId}`, { method: 'PUT', headers, body: fd });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(j?.mensagem || `Erro ${r.status}`);
       } else {
-        await api('POST', `/api/produtos`, payload);
+        const r = await fetch(`${API_BASE}/api/produtos`, { method: 'POST', headers, body: fd });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(j?.mensagem || `Erro ${r.status}`);
       }
 
       produtoModal.hide();
@@ -269,6 +302,7 @@
       alert(e?.message || 'Erro ao salvar produto.');
     }
   });
+
 
   $grid?.addEventListener('click', (ev) => {
     const btn = ev.target.closest('button');
@@ -313,7 +347,6 @@
     $viewCategoria.textContent = p.tipo || '-';
     $viewPreco.textContent = formatMoney(p.preco);
     $viewEstoque.textContent = `${p.estoqueAtual ?? 0} unidades`;
-    $viewValidade.textContent = formatDateISOToBR(p.validade);
     $viewEstoqueBadge.outerHTML = estoqueBadgeHtml(p.estoqueAtual);
     state.currentViewId = p.id;
     viewModal.show();
@@ -326,24 +359,36 @@
     $produtoModalLabel.textContent = 'Editar Produto';
     state.currentEditId = p.id;
 
+    // Preencher campos do formulário
     $nome.value = p.nome || '';
-
-    const textoTipo = (p.tipo || '').toLowerCase();
-    let matched = false;
-    Array.from($categoria.options).forEach(opt => {
-      if (opt.textContent.trim().toLowerCase() === textoTipo) {
-        opt.selected = true;
-        matched = true;
+    $preco.value = p.preco || '';
+    $estoque.value = p.estoqueAtual ?? 0;
+    // Selecionar categoria pelo texto
+    for (const opt of $categoria.options) {
+      if (opt.textContent.trim() === (p.tipo || '').trim()) {
+        $categoria.value = opt.value;
+        break;
       }
-    });
-    if (!matched) $categoria.value = '';
+    }
 
-    $preco.value = Number(p.preco || 0);
-    $validade.value = p.validade ? String(p.validade).slice(0,10) : '';
-    $estoque.value = Number(p.estoqueAtual || 0);
+    // Imagem
+    if (p.imageUrl) {
+      const imgUrl = p.imageUrl.startsWith('http') ? p.imageUrl : `${API_BASE}${p.imageUrl}`;
+      $preview.src = imgUrl;
+      $preview.classList.remove('d-none');
+      $wrapRemover.classList.remove('d-none');
+      if ($remover) $remover.checked = false;
+    } else {
+      $preview.removeAttribute('src');
+      $preview.classList.add('d-none');
+      $wrapRemover.classList.add('d-none');
+    }
+
+    if ($imgInput) $imgInput.value = '';
 
     produtoModal.show();
   }
+
 
   function abrirDelete(id, nome) {
     state.currentDeleteId = id;

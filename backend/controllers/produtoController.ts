@@ -2,13 +2,27 @@ import { Request, Response } from "express";
 import * as produtoService from "../services/produtoService";
 import { respostaSucesso } from "../utils/response";
 
+function publicImageUrl(req: Request, filename?: string | null) {
+  if (!filename) return undefined;
+  // arquivo já está salvo em /uploads/produtos/<arquivo>
+  // e app expõe /uploads como estático
+  return `/uploads/produtos/${filename}`;
+}
+
 export const criarProduto = async (req: Request, res: Response) => {
-  const produto = await produtoService.criarProduto(req.body);
+  const file = (req as any).file as Express.Multer.File | undefined;
+  const imageUrl = file ? publicImageUrl(req, file.filename) : undefined;
+
+  const produto = await produtoService.criarProduto({
+    ...req.body,
+    imageUrl,
+  });
+
   respostaSucesso(res, "Produto criado com sucesso", produto, 201);
 };
 
 export const listarProdutos = async (req: Request, res: Response) => {
-  const { geral = "", tipo, page = "1", perPage = "10" } = req.query;
+  const { geral = "", tipo, page = "1", perPage = "12" } = req.query;
   const out = await produtoService.listarProdutos({
     geral: String(geral),
     tipo: (tipo as string) || undefined,
@@ -24,7 +38,14 @@ export const buscarProdutoPorId = async (req: Request, res: Response) => {
 };
 
 export const atualizarProduto = async (req: Request, res: Response) => {
-  const r = await produtoService.atualizarProduto(req.params.id, req.body);
+  const file = (req as any).file as Express.Multer.File | undefined;
+  const imageUrl = file ? publicImageUrl(req, file.filename) : undefined;
+
+  const r = await produtoService.atualizarProduto(req.params.id, {
+    ...req.body,
+    imageUrl,
+  });
+
   respostaSucesso(res, r.mensagem);
 };
 
@@ -44,3 +65,4 @@ export const ajustarEstoque = async (req: Request, res: Response) => {
   const out = await produtoService.ajustarEstoque(req.params.id, d);
   respostaSucesso(res, out.mensagem, out.produto);
 };
+
