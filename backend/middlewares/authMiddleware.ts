@@ -44,11 +44,11 @@ export function auth(roles?: RoleInput): RequestHandler {
       const payload = jwt.verify(token, secret) as any;
 
       (req as any).user = {
-        id: payload.sub,
+        id: Number(payload.sub), // <-- garante que é número
         role: String(payload.role).toUpperCase(),
         nome: payload.nome,
       };
-
+      console.log("Payload do token:", payload);
       if (allowed && !allowed.includes((req as any).user.role)) {
         res.status(403).json({ error: "Sem permissão" });
         return; // <- sem retornar Response
@@ -56,6 +56,7 @@ export function auth(roles?: RoleInput): RequestHandler {
 
       next(); // sucesso
     } catch {
+      console.log("Token recebido:", token);
       res.status(401).json({ error: "Token inválido ou expirado" });
       return;
     }

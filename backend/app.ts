@@ -8,6 +8,7 @@ import loginRoutes from "./routes/loginRoutes";
 import clienteRoutes from "./routes/clienteRoutes";
 import produtoRoutes from "./routes/produtoRoutes";
 import clienteValidadeRoutes from "./routes/clienteValidadeRoutes";
+import vendaRoutes from "./routes/vendaRoutes";
 
 
 const app = express();
@@ -22,6 +23,6 @@ app.use("/api", clienteRoutes);
 app.use("/api", produtoRoutes);
 app.use("/uploads", express.static(UPLOADS_DIR));
 app.use("/api", clienteValidadeRoutes);
-console.log("Servindo estáticos em:", UPLOADS_DIR);
+app.use("/api", vendaRoutes);
 app.use(errorHandler);
 export default app;
