@@ -273,32 +273,34 @@ export async function removerItem(vendaId: number, itemId: number) {
 }
 
 // ---------- Pagamento ----------
-export async function confirmarPagamento(
-  vendaId: number,
-  formaPagamento: FormaPagamento | string,
-  desconto?: number
-) {
-  const venda = await prisma.venda.findUnique({ where: { id: vendaId }, include: { itens: true } });
+// services/vendaService.ts
+export async function confirmarPagamento(vendaId: number, formaPagamento: FormaPagamento, desconto?: number) {
+  const venda = await prisma.venda.findUnique({
+    where: { id: vendaId },
+    include: { itens: true },
+  });
   if (!venda) { const e = new Error("Venda não encontrada."); (e as any).status = 404; throw e; }
-  if (venda.status !== StatusVenda.ABERTA && venda.status !== StatusVenda.PAGA) {
-    const e = new Error("Pagamento só pode ser confirmado com venda ABERTA ou PAGA."); (e as any).status = 400; throw e;
-  }
 
-  const formaPagamentoNorm = normalizeFormaPagamento(formaPagamento);
+  // ✅ aceitar LOJA também
+  if (venda.status !== StatusVenda.ABERTA && venda.status !== StatusVenda.PAGA && venda.status !== StatusVenda.LOJA) {
+    const e = new Error("Pagamento só pode ser confirmado com venda ABERTA, PAGA ou LOJA.");
+    (e as any).status = 400; throw e;
+  }
 
   if (typeof desconto === "number") {
     await prisma.venda.update({ where: { id: vendaId }, data: { desconto: D(desconto) } });
   }
-  const totais = await recalcularTotais(vendaId, prisma);
+  const totais = await recalcularTotais(vendaId);
 
   const atualizado = await prisma.venda.update({
     where: { id: vendaId },
-    data: { formaPagamento: formaPagamentoNorm, status: StatusVenda.PAGA },
+    data: { formaPagamento, status: StatusVenda.PAGA },
     include: { itens: true, cliente: true, vendedor: true, entrega: true },
   });
 
   return { mensagem: "Pagamento confirmado", venda: atualizado, totais };
 }
+
 
 // ---------- Entrega ----------
 type AtualizarEntregaDTO = {
@@ -398,11 +400,21 @@ export async function cancelarVenda(vendaId: number) {
 export async function buscarVendaPorId(vendaId: number) {
   const venda = await prisma.venda.findUnique({
     where: { id: vendaId },
-    include: { itens: true, cliente: true, vendedor: true, entrega: true },
+    include: {
+      cliente: true,
+      vendedor: true,
+      entrega: { include: { motorista: true } },
+      itens: { include: { produto: true } },
+    },
   });
-  if (!venda) { const e = new Error("Venda não encontrada."); (e as any).status = 404; throw e; }
+  if (!venda) {
+    const e = new Error("Venda não encontrada.");
+    (e as any).status = 404;
+    throw e;
+  }
   return venda;
 }
+
 
 type ListarFiltro = {
   clienteId?: number;

@@ -32,7 +32,8 @@
       const msg = data?.mensagem || data?.error || `Erro ${res.status}`;
       throw new Error(msg);
     }
-    return data; // esperado: {sucesso, mensagem, dados} ou objeto direto
+    // pode vir {sucesso, mensagem, dados} ou objeto direto
+    return data?.dados ?? data;
   }
 
   // ===== Helpers de dinheiro (centavos) =====
@@ -56,9 +57,6 @@
   function formatBRLFromCents(cents) {
     return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" })
       .format(fromCents(cents));
-  }
-  function centsToNumber(cents) {
-    return fromCents(cents);
   }
   function readMoneyText(text) {
     const num = String(text || "").replace(/[^\d.,-]/g, "");
@@ -134,15 +132,18 @@
   const formaPagamentoPendente = document.getElementById("formaPagamentoPendente");
   const observacoesPendente = document.getElementById("observacoesPendente");
 
-  // Lista do modal clientes
+  // Modal listagem de clientes
   const listaClientesEl = document.getElementById("listaClientes");
+
+  const urlParams = new URLSearchParams(location.search);
+  const currentVendaId = urlParams.get("id") ? Number(urlParams.get("id")) : null;
 
   // =========================
   // Estado
   // =========================
   let selectedCliente = null; // {id, nome, telefone, endereco}
-  let carrinho = [];          // [{id, nome, precoCents, quantidade, subtotalCents}]
-  let catalogoProdutos = [];  // [{id, nome, preco (number)|precoCentavos (int), ...}]
+  let carrinho = [];          // [{id, nome, precoCents, quantidade, subtotalCents, itemId?}]
+  let catalogoProdutos = [];  // [{id, nome, preco | precoCentavos }]
 
   // =========================
   // Carregamentos Iniciais
@@ -155,9 +156,76 @@
       atualizarListaProdutos();
       atualizarTotais();
       configurarEventos();
+
+      // se estiver editando, carrega a venda
+      if (currentVendaId) await loadVendaExistente(currentVendaId);
     } catch (e) {
       console.error(e);
       toastError(e.message || "Falha ao inicializar a tela de vendas.");
+    }
+  }
+
+  async function loadVendaExistente(vendaId) {
+    const v = await api("GET", `/api/vendas/${vendaId}`); // espera include de cliente, entrega, itens.produto
+
+    // cliente (fallback se API não enviar 'cliente')
+    const cli =
+      v.cliente ||
+      (v.clienteId
+        ? await api("GET", `/api/clientes?perPage=1&id=${v.clienteId}`).then(r => (r?.data?.[0] || r))
+        : null);
+
+    if (cli) {
+      selecionarCliente({
+        id: cli.id,
+        nome: cli.nome,
+        telefone: cli.telefone || "-",
+        endereco: cli.endereco || "-",
+      });
+    } else {
+      selectedCliente = null; // impede finalizar sem cliente
+    }
+
+    // itens -> carrinho
+    carrinho = (v.itens || []).map(i => {
+      const nome =
+        i.produto?.nome ||
+        catalogoProdutos.find(p => Number(p.id) === Number(i.produtoId))?.nome ||
+        `Produto ${i.produtoId}`;
+      return {
+        id: String(i.produtoId),
+        itemId: i.id, // necessário para remover/atualizar no backend
+        nome,
+        precoCents: toCents(String(i.precoUnitario)),
+        quantidade: Number(i.quantidade),
+        subtotalCents: toCents(String(i.subtotal)),
+      };
+    });
+    atualizarListaProdutos();
+
+    // totais / desconto
+    descontoVenda.value = Number(v.desconto || 0).toFixed(2);
+    atualizarTotais();
+
+    // forma de pagamento (enum do backend)
+    if (v.formaPagamento) formaPagamento.value = String(v.formaPagamento);
+
+    // entrega / motorista / data (se existir)
+    if (v.entrega) {
+      if (v.entrega.motoristaId) motoristaVenda.value = String(v.entrega.motoristaId);
+      const dPrev = v.entrega.dataPrevista || v.entrega.dataEntrega;
+      if (dPrev) {
+        const d = new Date(dPrev);
+        if (!Number.isNaN(+d)) dataEntrega.value = d.toISOString().slice(0, 10);
+      }
+    }
+
+    // observações
+    if (v.observacao) observacoesVenda.value = v.observacao;
+
+    // Se a venda não estiver ABERTA/LOJA, desabilite adição de itens
+    if (v.status !== "ABERTA" && v.status !== "LOJA") {
+      btnAdicionarProduto.disabled = true;
     }
   }
 
@@ -168,13 +236,11 @@
     let usuarios = [];
     try {
       const resp = await api("GET", "/api/usuarios?cargo=MOTORISTA&perPage=200");
-      const payload = resp?.dados || resp;
-      usuarios = payload?.data || payload || [];
+      usuarios = resp?.data || resp || [];
     } catch {
       try {
         const resp2 = await api("GET", "/api/usuarios?role=MOTORISTA&perPage=200");
-        const payload2 = resp2?.dados || resp2;
-        usuarios = payload2?.data || payload2 || [];
+        usuarios = resp2?.data || resp2 || [];
       } catch (e2) {
         console.warn("Não consegui carregar motoristas do backend:", e2);
         usuarios = [];
@@ -211,8 +277,7 @@
     if (filtro?.trim()) params.set("geral", filtro.trim());
     params.set("incluirInativos", "false");
 
-    const data = await api("GET", `/api/clientes?${params.toString()}`);
-    const payload = data?.dados || data;
+    const payload = await api("GET", `/api/clientes?${params.toString()}`);
     const clientes = payload?.data || payload || [];
 
     if (!clientes.length) {
@@ -255,8 +320,7 @@
   async function loadProdutos() {
     produtoSelect.innerHTML = `<option value="" selected disabled>Selecione um produto</option>`;
 
-    const data = await api("GET", `/api/produtos?perPage=200`);
-    const payload = data?.dados || data;
+    const payload = await api("GET", `/api/produtos?perPage=200`);
     catalogoProdutos = payload?.data || payload || [];
 
     catalogoProdutos.forEach((p) => {
@@ -311,45 +375,48 @@
       carrinho.forEach((item) => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td>${item.nome}</td>
-          <td>${formatBRLFromCents(item.precoCents)}</td>
-          <td>${item.quantidade}</td>
-          <td class="text-end">${formatBRLFromCents(item.subtotalCents)}</td>
-          <td class="text-center">
-            <button class="btn btn-sm btn-danger btn-remover-produto" data-id="${item.id}">
-              <i class="bi bi-trash"></i>
-            </button>
-          </td>
-        `;
+        <td>${item.nome}</td>
+        <td>${formatBRLFromCents(item.precoCents)}</td>
+        <td>${item.quantidade}</td>
+        <td class="text-end">${formatBRLFromCents(item.subtotalCents)}</td>
+        <td class="text-center">
+          <button class="btn btn-sm btn-danger btn-remover-produto" data-id="${item.id}" data-item-id="${item.itemId || ""}">
+            <i class="bi bi-trash"></i>
+          </button>
+        </td>
+      `;
         listaProdutos.appendChild(tr);
       });
 
       listaProdutos.querySelectorAll(".btn-remover-produto").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const id = btn.getAttribute("data-id");
-          if (!window.Swal) {
-            if (confirm("Remover este produto?")) {
-              carrinho = carrinho.filter((x) => String(x.id) !== String(id));
-              atualizarListaProdutos(); atualizarTotais();
-            }
+        btn.addEventListener("click", async () => {
+          const idProduto = btn.getAttribute("data-id");
+          const itemId = btn.getAttribute("data-item-id"); // quando veio do backend
+
+          const doRemoveLocal = () => {
+            carrinho = carrinho.filter((x) => String(x.id) !== String(idProduto));
+            atualizarListaProdutos();
+            atualizarTotais();
+            toastSuccess("Produto removido.");
+          };
+
+          if (!currentVendaId || !itemId) {
+            if (!window.Swal) { if (confirm("Remover este produto?")) doRemoveLocal(); return; }
+            Swal.fire({
+              icon: "question", title: "Remover Produto", text: "Tem certeza?", showCancelButton: true,
+              confirmButtonText: "Sim, remover", cancelButtonText: "Cancelar", confirmButtonColor: "#dc3545"
+            }).then(r => { if (r.isConfirmed) doRemoveLocal(); });
             return;
           }
-          Swal.fire({
-            icon: "question",
-            title: "Remover Produto",
-            text: "Tem certeza que deseja remover este produto da venda?",
-            showCancelButton: true,
-            confirmButtonText: "Sim, remover",
-            cancelButtonText: "Cancelar",
-            confirmButtonColor: "#dc3545",
-            cancelButtonColor: "#6c757d",
-          }).then((r) => {
-            if (r.isConfirmed) {
-              carrinho = carrinho.filter((x) => String(x.id) !== String(id));
-              atualizarListaProdutos(); atualizarTotais();
-              toastSuccess("Produto removido.");
-            }
-          });
+
+          // modo edição: remove no backend
+          try {
+            await api("DELETE", `/api/vendas/${currentVendaId}/itens/${itemId}`);
+            await loadVendaExistente(currentVendaId);
+            toastSuccess("Produto removido.");
+          } catch (e) {
+            toastError(e.message || "Falha ao remover item.");
+          }
         });
       });
     }
@@ -405,10 +472,9 @@
         const endereco = document.getElementById("enderecoNovoCliente").value.trim();
         if (!nome) throw new Error("Nome é obrigatório.");
 
-        const resp = await api("POST", `/api/clientes`, {
+        const cli = await api("POST", `/api/clientes`, {
           nome, telefone: telefone || null, endereco: endereco || null, status: "ATIVO",
         });
-        const cli = resp?.dados || resp;
 
         selecionarCliente({
           id: cli.id, nome: cli.nome,
@@ -432,28 +498,48 @@
     precoProduto?.addEventListener("input", atualizarSubtotalProduto);
 
     // adicionar item
-    btnAdicionarProduto?.addEventListener("click", () => {
+    btnAdicionarProduto?.addEventListener("click", async () => {
       if (!produtoSelect.value) return toastWarn("Selecione um produto.");
       const qtd = Number(quantidadeProduto.value || 0);
       if (!qtd || qtd <= 0) return toastWarn("Informe uma quantidade válida.");
 
-      const id = produtoSelect.value;
+      const id = Number(produtoSelect.value);
       const opt = produtoSelect.options[produtoSelect.selectedIndex];
       const nome = opt.textContent;
       const precoCents = toCents(precoProduto.value);
-      const subtotalCents = precoCents * qtd;
 
-      const existente = carrinho.find((x) => String(x.id) === String(id));
-      if (existente) {
-        existente.quantidade += qtd;
-        existente.subtotalCents = existente.quantidade * existente.precoCents;
-        toastSuccess(`Quantidade de ${nome} atualizada.`);
+      if (currentVendaId) {
+        // edição: cria item na venda atual
+        try {
+          await api("POST", `/api/vendas/${currentVendaId}/itens`, {
+            produtoId: id,
+            quantidade: qtd,
+            precoUnitario: fromCents(precoCents),
+          });
+          await loadVendaExistente(currentVendaId);
+          toastSuccess(`${nome} adicionado.`);
+        } catch (e) {
+          return toastError(e.message || "Falha ao adicionar item.");
+        }
       } else {
-        carrinho.push({ id, nome, precoCents, quantidade: qtd, subtotalCents });
-        toastSuccess(`${nome} adicionado.`);
+        // venda nova (local)
+        const existente = carrinho.find((x) => String(x.id) === String(id));
+        if (existente) {
+          existente.quantidade += qtd;
+          existente.subtotalCents = existente.quantidade * existente.precoCents;
+          toastSuccess(`Quantidade de ${nome} atualizada.`);
+        } else {
+          carrinho.push({
+            id: String(id),
+            nome,
+            precoCents,
+            quantidade: qtd,
+            subtotalCents: qtd * precoCents,
+          });
+          toastSuccess(`${nome} adicionado.`);
+        }
+        atualizarListaProdutos();
       }
-
-      atualizarListaProdutos();
 
       // limpa campos
       produtoSelect.value = "";
@@ -494,7 +580,7 @@
       else trocoFinalizarVenda.classList.remove("text-danger");
     });
 
-    // confirmar finalização -> envia pro backend
+    // ====== CONFIRMAR FINALIZAÇÃO ======
     btnConfirmarFinalizacao?.addEventListener("click", async () => {
       try {
         const recebidoCents = toCents(valorRecebidoFinalizar.value);
@@ -505,25 +591,43 @@
 
         const descontoCents = toCents(descontoVenda.value);
 
-        const body = {
-          clienteId: Number(selectedCliente.id),
-          formaPagamento: String(formaPagamento.value), // DINHEIRO/CARTAO_CREDITO/...
-          desconto: Number(fromCents(descontoCents)),
-          observacao: (observacoesVenda?.value || "").trim() || null,
-          // entrega não se aplica aqui; é retirada na loja
-          itens: carrinho.map((it) => ({
-            produtoId: Number(it.id),
-            quantidade: Number(it.quantidade),
-            precoUnitario: Number(fromCents(it.precoCents)),
-            // se você capturar validade por item no front, adicione aqui
-          })),
-          status: "LOJA",
-        };
+        if (currentVendaId) {
+          // edição: apenas confirma pagamento da venda existente
+          await api("PATCH", `/api/vendas/${currentVendaId}/pagamento`, {
+            formaPagamento: String(formaPagamento.value || "DINHEIRO"),
+            desconto: fromCents(descontoCents),
+          });
+        } else {
+          // nova venda: (1) cria venda, (2) confirma pagamento
+          if (!carrinho.length) throw new Error("Carrinho vazio.");
+          if (!selectedCliente) throw new Error("Selecione um cliente.");
 
-        await api("POST", "/api/vendas", body);
+          // 1) cria
+          const vendaCriada = await api("POST", "/api/vendas", {
+            clienteId: Number(selectedCliente.id),
+            formaPagamento: String(formaPagamento.value || "DINHEIRO"),
+            desconto: fromCents(descontoCents),
+            observacao: (observacoesVenda?.value || "").trim() || null,
+            itens: carrinho.map((it) => ({
+              produtoId: Number(it.id),
+              quantidade: Number(it.quantidade),
+              precoUnitario: Number(fromCents(it.precoCents)),
+            })),
+          });
+
+          const vendaId = vendaCriada?.id || vendaCriada?.venda?.id;
+          if (!vendaId) throw new Error("Falha ao criar a venda.");
+
+          // 2) confirma pagamento
+          await api("PATCH", `/api/vendas/${vendaId}/pagamento`, {
+            formaPagamento: String(formaPagamento.value || "DINHEIRO"),
+            // se quiser reenviar desconto aqui, mantenha o mesmo valor:
+            desconto: fromCents(descontoCents),
+          });
+        }
 
         finalizarVendaModal.hide();
-        toastSuccess("Venda finalizada com sucesso!");
+        toastSuccess("Pagamento confirmado!");
         limparFormularioVenda();
         setTimeout(() => (window.location.href = "index.html"), 600);
       } catch (e) {
@@ -531,116 +635,75 @@
       }
     });
 
-    // salvar como pendente (abre modal de pendente)
+    // ====== SALVAR COMO PENDENTE ======
     btnSalvarPendente?.addEventListener("click", () => {
       if (!carrinho.length) return toastWarn("Adicione ao menos um produto.");
       if (!selectedCliente) return toastWarn("Selecione um cliente.");
 
-      // motorista obrigatório para pendente (como você pediu)
-      if (!motoristaVenda?.value) {
-        return toastWarn("Selecione um motorista/entregador.");
-      }
+      // motorista obrigatório para pendente
+      if (!motoristaVenda?.value) return toastWarn("Selecione um motorista/entregador.");
 
       // espelha dados no modal
       totalVendaPendente.textContent = totalVenda.textContent;
-
       let textoPagamento = formaPagamento.options[formaPagamento.selectedIndex].text;
       textoPagamento += formaPagamento.value.toUpperCase() === "DINHEIRO" ? " (a receber)" : " (a confirmar)";
       formaPagamentoPendente.textContent = textoPagamento;
 
       // carrega observações da venda no campo do modal pendente
-      observacoesPendente.value = (observacoesVenda?.value || "");
+      if (observacoesPendente) observacoesPendente.value = (observacoesVenda?.value || "");
       salvarPendenteModal.show();
     });
 
-    // --- confirmar pendente -> cria VENDA ABERTA no backend ---
     btnConfirmarPendente?.addEventListener("click", async () => {
       try {
-        if (!carrinho.length) return toastWarn("Adicione ao menos um produto.");
-        if (!selectedCliente) return toastWarn("Selecione um cliente.");
-        if (!motoristaVenda?.value) return toastWarn("Selecione um motorista/entregador.");
-
         const descontoCents = toCents(descontoVenda.value);
 
-        // IMPORTANTE: o service aceita tanto "idProduto" quanto "produtoId".
-        // Vamos mandar "idProduto" para ficar 100% compatível com o normalizador.
-        const body = {
-          clienteId: Number(selectedCliente.id),
-          // formaPagamento pode vir em minúsculas; garanto UPPER aqui:
-          formaPagamento: String(formaPagamento.value || "").trim().toUpperCase(),
-          desconto: Number(fromCents(descontoCents)),
-          observacao: (observacoesPendente?.value || "").trim() || null, // <- singular (backend espera "observacao")
-          // Itens em formato aceito pelo normalizador
-          itens: carrinho.map((it) => ({
-            idProduto: Number(it.id),
-            quantidade: Number(it.quantidade),
-            precoUnitario: Number(fromCents(it.precoCents)), // número com 2 casas
-          })),
-          // Opcional: dizer explicitamente que é ABERTA (pendente de pagamento)
-          status: "ABERTA",
-        };
-
-        // cria a venda
-        const vendaResp = await api("POST", "/api/vendas", body);
-
-        // Se quiser já gravar info de entrega vinculada:
-        // (define motorista e data prevista/entrega inicial)
-        if (motoristaVenda?.value || dataEntrega?.value) {
-          await api("PUT", `/api/vendas/${vendaResp.id || vendaResp?.dados?.id || vendaResp?.venda?.id}/entrega`, {
+        if (currentVendaId) {
+          // edição: só atualiza entrega
+          await api("PUT", `/api/vendas/${currentVendaId}/entrega`, {
             motoristaId: motoristaVenda?.value ? Number(motoristaVenda.value) : null,
             status: "PENDENTE",
             dataPrevista: dataEntrega?.value || null,
             observacao: (observacoesPendente?.value || "").trim() || null,
           });
+        } else {
+          // nova: cria a venda ABERTA
+          const created = await api("POST", "/api/vendas", {
+            clienteId: Number(selectedCliente.id),
+            formaPagamento: String(formaPagamento.value || "DINHEIRO"),
+            desconto: fromCents(descontoCents),
+            observacao: (observacoesPendente?.value || "").trim() || null,
+            itens: carrinho.map((it) => ({
+              produtoId: Number(it.id),
+              quantidade: Number(it.quantidade),
+              precoUnitario: Number(fromCents(it.precoCents)),
+            })),
+          });
+
+          const vendaId = created?.id || created?.venda?.id;
+          if (!vendaId) throw new Error("Falha ao criar a venda.");
+
+          // entrega (opcional)
+          if (motoristaVenda?.value || dataEntrega?.value || (observacoesPendente?.value || "").trim()) {
+            await api("PUT", `/api/vendas/${vendaId}/entrega`, {
+              motoristaId: motoristaVenda?.value ? Number(motoristaVenda.value) : null,
+              status: "PENDENTE",
+              dataPrevista: dataEntrega?.value || null,
+              observacao: (observacoesPendente?.value || "").trim() || null,
+            });
+          }
         }
 
         salvarPendenteModal.hide();
-        toastSuccess("Venda salva como pendente!");
+        toastSuccess("Venda salva/atualizada como pendente!");
         limparFormularioVenda();
         setTimeout(() => (window.location.href = "index.html"), 600);
       } catch (e) {
-        toastError(e.message || "Falha ao salvar como pendente.");
+        toastError(e.message || "Falha ao salvar pendente.");
       }
     });
 
-    // confirmar pendente -> envia pro backend
-    btnConfirmarFinalizacao?.addEventListener("click", async () => {
-      try {
-        const recebidoCents = toCents(valorRecebidoFinalizar.value);
-        const totalCents = readMoneyText(totalFinalizarVenda.textContent);
-        if (recebidoCents < totalCents) {
-          return toastError("Valor recebido menor que o total.");
-        }
-
-        const descontoCents = toCents(descontoVenda.value);
-
-        const body = {
-          clienteId: Number(selectedCliente.id),
-          formaPagamento: String(formaPagamento.value), // DINHEIRO/CARTAO_CREDITO/...
-          desconto: Number(fromCents(descontoCents)),
-          observacao: (observacoesVenda?.value || "").trim() || null,
-          // entrega não se aplica aqui; é retirada na loja
-          itens: carrinho.map((it) => ({
-            produtoId: Number(it.id),
-            quantidade: Number(it.quantidade),
-            precoUnitario: Number(fromCents(it.precoCents)),
-            // se você capturar validade por item no front, adicione aqui
-          })),
-          status: "LOJA",
-        };
-
-        await api("POST", "/api/vendas", body);
-
-        finalizarVendaModal.hide();
-        toastSuccess("Venda finalizada com sucesso!");
-        limparFormularioVenda();
-        setTimeout(() => (window.location.href = "index.html"), 600);
-      } catch (e) {
-        toastError(e.message || "Falha ao finalizar venda.");
-      }
-    });
-
-    // cancelar venda
+    // cancelar venda (cancelar tela, não a venda no backend)
     btnCancelarVenda?.addEventListener("click", () => {
       if (!window.Swal) {
         if (confirm("Cancelar a venda?")) { limparFormularioVenda(); window.location.href = "index.html"; }

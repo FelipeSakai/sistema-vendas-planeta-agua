@@ -9,11 +9,11 @@ import clienteRoutes from "./routes/clienteRoutes";
 import produtoRoutes from "./routes/produtoRoutes";
 import clienteValidadeRoutes from "./routes/clienteValidadeRoutes";
 import vendaRoutes from "./routes/vendaRoutes";
-
+import relatorioRoutes from "./routes/relatorioRoutes";
 
 const app = express();
 app.use(cors({
-    origin: ['http://127.0.0.1:5500', 'http://localhost:5500'], // coloque os domínios do seu front
+    origin: ['http://127.0.0.1:5500', 'http://localhost:5500'],
     credentials: true
 }));
 app.use(express.json());
@@ -24,5 +24,6 @@ app.use("/api", produtoRoutes);
 app.use("/uploads", express.static(UPLOADS_DIR));
 app.use("/api", clienteValidadeRoutes);
 app.use("/api", vendaRoutes);
+app.use("/api/relatorios", relatorioRoutes);
 app.use(errorHandler);
 export default app;
