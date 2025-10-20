@@ -34,9 +34,9 @@ enum StatusVenda {
 
 enum FormaPagamento {
   DINHEIRO
-  CARTAO
+  CARTAO_CREDITO
+  CARTAO_DEBITO
   PIX
-  BOLETO
   OUTRO
 }
 

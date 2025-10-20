@@ -11,7 +11,6 @@
   function authHeaders() {
     const t = getToken();
     if (!t) {
-      // volta pro login se não tiver token
       window.location.href = "login.html";
       return {};
     }
@@ -36,54 +35,48 @@
     return data; // esperado: {sucesso, mensagem, dados} ou objeto direto
   }
 
-  // ===== Helpers de dinheiro (trabalhar em CENTAVOS) =====
+  // ===== Helpers de dinheiro (centavos) =====
   function toCents(n) {
+    if (n == null) return 0;
+    if (typeof n === "number") return Math.round(n * 100);
     if (typeof n === "string") {
-      const s = n.replace(/\s+/g, "").replace(/[R$\u00A0]/g, "");
-      const norm = s.replace(/\./g, "").replace(",", ".");
-      return Math.round(Number(norm || 0) * 100);
+      const s = n.trim().replace(/\s+/g, "").replace(/[R$\u00A0]/g, "");
+      let norm;
+      if (s.indexOf(".") > -1 && s.indexOf(",") > -1) {
+        norm = s.replace(/\./g, "").replace(",", ".");
+      } else {
+        norm = s.replace(/,/g, ".");
+      }
+      const num = Number(norm);
+      return Number.isNaN(num) ? 0 : Math.round(num * 100);
     }
-    return Math.round(Number(n || 0) * 100);
+    return 0;
   }
-  function fromCents(cents) {
-    return cents / 100;
-  }
+  function fromCents(cents) { return (Number(cents || 0) / 100); }
   function formatBRLFromCents(cents) {
     return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" })
       .format(fromCents(cents));
+  }
+  function centsToNumber(cents) {
+    return fromCents(cents);
   }
   function readMoneyText(text) {
     const num = String(text || "").replace(/[^\d.,-]/g, "");
     return toCents(num);
   }
 
-  // SweetAlert2 helper
+  // SweetAlert2 helpers
   function toastSuccess(msg) {
     if (!window.Swal) return alert(msg);
-    Swal.fire({
-      icon: "success",
-      title: msg,
-      toast: true,
-      position: "top-end",
-      showConfirmButton: false,
-      timer: 2500,
-    });
+    Swal.fire({ icon: "success", title: msg, toast: true, position: "top-end", showConfirmButton: false, timer: 2500 });
   }
   function toastError(msg) {
     if (!window.Swal) return alert(msg);
-    Swal.fire({
-      icon: "error",
-      title: "Erro",
-      text: msg,
-    });
+    Swal.fire({ icon: "error", title: "Erro", text: msg });
   }
   function toastWarn(msg) {
     if (!window.Swal) return alert(msg);
-    Swal.fire({
-      icon: "warning",
-      title: "Atenção",
-      text: msg,
-    });
+    Swal.fire({ icon: "warning", title: "Atenção", text: msg });
   }
 
   // =========================
@@ -149,7 +142,7 @@
   // =========================
   let selectedCliente = null; // {id, nome, telefone, endereco}
   let carrinho = [];          // [{id, nome, precoCents, quantidade, subtotalCents}]
-  let catalogoProdutos = [];  // [{id, nome, preco (number), ...}]
+  let catalogoProdutos = [];  // [{id, nome, preco (number)|precoCentavos (int), ...}]
 
   // =========================
   // Carregamentos Iniciais
@@ -169,10 +162,9 @@
   }
 
   // =========================
-  // API: Clientes e Produtos
+  // API: Motoristas, Clientes, Produtos
   // =========================
   async function loadMotoristas() {
-
     let usuarios = [];
     try {
       const resp = await api("GET", "/api/usuarios?cargo=MOTORISTA&perPage=200");
@@ -192,11 +184,9 @@
     const sel = document.getElementById("motoristaVenda");
     if (!sel) return;
 
-    // limpa e recoloca o placeholder
     sel.innerHTML = `<option value="" selected disabled>Selecione o motorista</option>`;
 
     if (!usuarios.length) {
-      // fallback amigável (mostra que não tem motoristas)
       const opt = document.createElement("option");
       opt.value = "";
       opt.disabled = true;
@@ -214,13 +204,11 @@
   }
 
   async function atualizarListaClientes(filtro = "") {
-    // limpa a lista
     listaClientesEl.innerHTML = "";
 
     const params = new URLSearchParams();
     params.set("perPage", "50");
     if (filtro?.trim()) params.set("geral", filtro.trim());
-    // inclui inativos? aqui optamos por só ativos
     params.set("incluirInativos", "false");
 
     const data = await api("GET", `/api/clientes?${params.toString()}`);
@@ -249,7 +237,6 @@
       listaClientesEl.appendChild(li);
     });
 
-    // bind
     listaClientesEl.querySelectorAll(".btn-selecionar").forEach((btn) => {
       btn.addEventListener("click", () => {
         const li = btn.closest("li");
@@ -266,7 +253,6 @@
   }
 
   async function loadProdutos() {
-    // preenche o select com produtos do backend
     produtoSelect.innerHTML = `<option value="" selected disabled>Selecione um produto</option>`;
 
     const data = await api("GET", `/api/produtos?perPage=200`);
@@ -274,11 +260,17 @@
     catalogoProdutos = payload?.data || payload || [];
 
     catalogoProdutos.forEach((p) => {
-      // espera-se que o backend retorne preco como número (decimal)
       const opt = document.createElement("option");
       opt.value = String(p.id);
       opt.textContent = p.nome;
-      opt.setAttribute("data-preco", Number(p.preco || 0).toFixed(2));
+
+      // suportar precoCentavos (int) ou preco (number)
+      if (typeof p.precoCentavos === "number") {
+        opt.setAttribute("data-preco", (p.precoCentavos / 100).toFixed(2));
+      } else {
+        opt.setAttribute("data-preco", Number(p.preco || 0).toFixed(2));
+      }
+
       produtoSelect.appendChild(opt);
     });
   }
@@ -304,8 +296,8 @@
   // =========================
   function atualizarSubtotalProduto() {
     const qtd = Number(quantidadeProduto.value || 0);
-    const preco = toCents(precoProduto.value);
-    subtotalProduto.value = fromCents(qtd * preco).toFixed(2);
+    const precoCents = toCents(precoProduto.value);
+    subtotalProduto.value = fromCents(qtd * precoCents).toFixed(2);
   }
 
   function atualizarListaProdutos() {
@@ -338,12 +330,10 @@
           if (!window.Swal) {
             if (confirm("Remover este produto?")) {
               carrinho = carrinho.filter((x) => String(x.id) !== String(id));
-              atualizarListaProdutos();
-              atualizarTotais();
+              atualizarListaProdutos(); atualizarTotais();
             }
             return;
           }
-
           Swal.fire({
             icon: "question",
             title: "Remover Produto",
@@ -356,8 +346,7 @@
           }).then((r) => {
             if (r.isConfirmed) {
               carrinho = carrinho.filter((x) => String(x.id) !== String(id));
-              atualizarListaProdutos();
-              atualizarTotais();
+              atualizarListaProdutos(); atualizarTotais();
               toastSuccess("Produto removido.");
             }
           });
@@ -382,14 +371,12 @@
   // Eventos
   // =========================
   function configurarEventos() {
-    // abrir modal selecionar cliente
+    // selecionar cliente
     btnSelecionarCliente?.addEventListener("click", () => {
       document.getElementById("selecionar-tab")?.click();
       atualizarListaClientes("").catch((e) => toastError(e.message));
       clienteModal.show();
     });
-
-    // alterar cliente
     btnAlterarCliente?.addEventListener("click", () => {
       document.getElementById("selecionar-tab")?.click();
       atualizarListaClientes("").catch((e) => toastError(e.message));
@@ -409,46 +396,32 @@
       }
     });
 
-    // cadastrar + selecionar cliente rápido (aba "Cadastrar Novo" do modal)
+    // cadastrar cliente rápido
     formCliente?.addEventListener("submit", async (e) => {
       e.preventDefault();
       try {
         const nome = document.getElementById("nomeNovoCliente").value.trim();
         const telefone = document.getElementById("telefoneNovoCliente").value.trim();
         const endereco = document.getElementById("enderecoNovoCliente").value.trim();
-
         if (!nome) throw new Error("Nome é obrigatório.");
 
-        const body = {
-          nome,
-          telefone: telefone || null,
-          endereco: endereco || null,
-          status: "ATIVO",
-        };
-        const resp = await api("POST", `/api/clientes`, body);
+        const resp = await api("POST", `/api/clientes`, {
+          nome, telefone: telefone || null, endereco: endereco || null, status: "ATIVO",
+        });
         const cli = resp?.dados || resp;
 
         selecionarCliente({
-          id: cli.id,
-          nome: cli.nome,
-          telefone: cli.telefone || "-",
-          endereco: cli.endereco || "-",
+          id: cli.id, nome: cli.nome,
+          telefone: cli.telefone || "-", endereco: cli.endereco || "-",
         });
-
         formCliente.reset();
-      } catch (err) {
-        toastError(err.message);
-      }
+      } catch (err) { toastError(err.message); }
     });
 
     // seleção de produto -> preenche preço
     produtoSelect?.addEventListener("change", () => {
       const id = produtoSelect.value;
-      if (!id) {
-        precoProduto.value = "";
-        subtotalProduto.value = "";
-        return;
-      }
+      if (!id) { precoProduto.value = ""; subtotalProduto.value = ""; return; }
       const opt = produtoSelect.options[produtoSelect.selectedIndex];
       const preco = opt.getAttribute("data-preco") || "0";
       precoProduto.value = Number(preco).toFixed(2);
@@ -458,7 +431,7 @@
     quantidadeProduto?.addEventListener("input", atualizarSubtotalProduto);
     precoProduto?.addEventListener("input", atualizarSubtotalProduto);
 
-    // adicionar produto ao carrinho
+    // adicionar item
     btnAdicionarProduto?.addEventListener("click", () => {
       if (!produtoSelect.value) return toastWarn("Selecione um produto.");
       const qtd = Number(quantidadeProduto.value || 0);
@@ -468,7 +441,7 @@
       const opt = produtoSelect.options[produtoSelect.selectedIndex];
       const nome = opt.textContent;
       const precoCents = toCents(precoProduto.value);
-      const subtotalCents = toCents(subtotalProduto.value);
+      const subtotalCents = precoCents * qtd;
 
       const existente = carrinho.find((x) => String(x.id) === String(id));
       if (existente) {
@@ -476,13 +449,7 @@
         existente.subtotalCents = existente.quantidade * existente.precoCents;
         toastSuccess(`Quantidade de ${nome} atualizada.`);
       } else {
-        carrinho.push({
-          id,
-          nome,
-          precoCents,
-          quantidade: qtd,
-          subtotalCents,
-        });
+        carrinho.push({ id, nome, precoCents, quantidade: qtd, subtotalCents });
         toastSuccess(`${nome} adicionado.`);
       }
 
@@ -498,19 +465,17 @@
     // desconto -> recalcula
     descontoVenda?.addEventListener("input", atualizarTotais);
 
-    // finalizar venda -> abre modal e preenche campos
+    // finalizar venda -> abre modal
     btnFinalizarVenda?.addEventListener("click", () => {
       if (!carrinho.length) return toastWarn("Adicione ao menos um produto.");
       if (!selectedCliente) return toastWarn("Selecione um cliente.");
 
       clienteFinalizarVenda.textContent = selectedCliente.nome;
-      formaPagamentoFinalizarVenda.textContent =
-        formaPagamento.options[formaPagamento.selectedIndex].text;
+      formaPagamentoFinalizarVenda.textContent = formaPagamento.options[formaPagamento.selectedIndex].text;
 
       const totalCents = readMoneyText(totalVenda.textContent);
       totalFinalizarVenda.textContent = formatBRLFromCents(totalCents);
 
-      // define valor recebido = total
       valorRecebidoFinalizar.value = fromCents(totalCents).toFixed(2);
       trocoFinalizarVenda.textContent = formatBRLFromCents(0);
       trocoFinalizarVenda.classList.remove("text-danger");
@@ -518,18 +483,15 @@
       finalizarVendaModal.show();
     });
 
-    // troco em tempo real (centavos)
+    // troco em tempo real
     valorRecebidoFinalizar?.addEventListener("input", () => {
       const recebidoCents = toCents(valorRecebidoFinalizar.value);
       const totalCents = readMoneyText(totalFinalizarVenda.textContent);
       const trocoCents = recebidoCents - totalCents;
 
       trocoFinalizarVenda.textContent = formatBRLFromCents(Math.max(0, trocoCents));
-      if (trocoCents < 0) {
-        trocoFinalizarVenda.classList.add("text-danger");
-      } else {
-        trocoFinalizarVenda.classList.remove("text-danger");
-      }
+      if (trocoCents < 0) trocoFinalizarVenda.classList.add("text-danger");
+      else trocoFinalizarVenda.classList.remove("text-danger");
     });
 
     // confirmar finalização -> envia pro backend
@@ -545,17 +507,17 @@
 
         const body = {
           clienteId: Number(selectedCliente.id),
-          formaPagamento: String(formaPagamento.value),
-          desconto: Number(fromCents(descontoCents)), // número com 2 casas
-          observacoes: (observacoesVenda?.value || "").trim() || null,
-          motoristaId: motoristaVenda?.value ? Number(motoristaVenda.value) : null, // se houver integração
-          dataEntrega: dataEntrega?.value || null,
+          formaPagamento: String(formaPagamento.value), // DINHEIRO/CARTAO_CREDITO/...
+          desconto: Number(fromCents(descontoCents)),
+          observacao: (observacoesVenda?.value || "").trim() || null,
+          // entrega não se aplica aqui; é retirada na loja
           itens: carrinho.map((it) => ({
-            idProduto: Number(it.id),
+            produtoId: Number(it.id),
             quantidade: Number(it.quantidade),
             precoUnitario: Number(fromCents(it.precoCents)),
+            // se você capturar validade por item no front, adicione aqui
           })),
-          status: "FINALIZADA", // ajuste ao seu enum se necessário
+          status: "LOJA",
         };
 
         await api("POST", "/api/vendas", body);
@@ -569,64 +531,119 @@
       }
     });
 
-    // salvar como pendente
+    // salvar como pendente (abre modal de pendente)
     btnSalvarPendente?.addEventListener("click", () => {
       if (!carrinho.length) return toastWarn("Adicione ao menos um produto.");
       if (!selectedCliente) return toastWarn("Selecione um cliente.");
 
-      // motorista obrigatório? (como você queria)
+      // motorista obrigatório para pendente (como você pediu)
       if (!motoristaVenda?.value) {
         return toastWarn("Selecione um motorista/entregador.");
       }
 
+      // espelha dados no modal
       totalVendaPendente.textContent = totalVenda.textContent;
 
       let textoPagamento = formaPagamento.options[formaPagamento.selectedIndex].text;
-      textoPagamento += formaPagamento.value === "dinheiro" ? " (a receber)" : " (a confirmar)";
+      textoPagamento += formaPagamento.value.toUpperCase() === "DINHEIRO" ? " (a receber)" : " (a confirmar)";
       formaPagamentoPendente.textContent = textoPagamento;
 
+      // carrega observações da venda no campo do modal pendente
       observacoesPendente.value = (observacoesVenda?.value || "");
       salvarPendenteModal.show();
     });
 
-    // confirmar pendente -> envia pro backend
+    // --- confirmar pendente -> cria VENDA ABERTA no backend ---
     btnConfirmarPendente?.addEventListener("click", async () => {
       try {
+        if (!carrinho.length) return toastWarn("Adicione ao menos um produto.");
+        if (!selectedCliente) return toastWarn("Selecione um cliente.");
+        if (!motoristaVenda?.value) return toastWarn("Selecione um motorista/entregador.");
+
         const descontoCents = toCents(descontoVenda.value);
 
+        // IMPORTANTE: o service aceita tanto "idProduto" quanto "produtoId".
+        // Vamos mandar "idProduto" para ficar 100% compatível com o normalizador.
         const body = {
           clienteId: Number(selectedCliente.id),
-          formaPagamento: String(formaPagamento.value),
+          // formaPagamento pode vir em minúsculas; garanto UPPER aqui:
+          formaPagamento: String(formaPagamento.value || "").trim().toUpperCase(),
           desconto: Number(fromCents(descontoCents)),
-          observacoes: (observacoesPendente?.value || "").trim() || null,
-          motoristaId: motoristaVenda?.value ? Number(motoristaVenda.value) : null,
-          dataEntrega: dataEntrega?.value || null,
+          observacao: (observacoesPendente?.value || "").trim() || null, // <- singular (backend espera "observacao")
+          // Itens em formato aceito pelo normalizador
           itens: carrinho.map((it) => ({
             idProduto: Number(it.id),
             quantidade: Number(it.quantidade),
-            precoUnitario: Number(fromCents(it.precoCents)),
+            precoUnitario: Number(fromCents(it.precoCents)), // número com 2 casas
           })),
-          status: "PENDENTE", // ajuste ao seu enum se necessário
+          // Opcional: dizer explicitamente que é ABERTA (pendente de pagamento)
+          status: "ABERTA",
         };
 
-        await api("POST", "/api/vendas", body);
+        // cria a venda
+        const vendaResp = await api("POST", "/api/vendas", body);
+
+        // Se quiser já gravar info de entrega vinculada:
+        // (define motorista e data prevista/entrega inicial)
+        if (motoristaVenda?.value || dataEntrega?.value) {
+          await api("PUT", `/api/vendas/${vendaResp.id || vendaResp?.dados?.id || vendaResp?.venda?.id}/entrega`, {
+            motoristaId: motoristaVenda?.value ? Number(motoristaVenda.value) : null,
+            status: "PENDENTE",
+            dataPrevista: dataEntrega?.value || null,
+            observacao: (observacoesPendente?.value || "").trim() || null,
+          });
+        }
 
         salvarPendenteModal.hide();
         toastSuccess("Venda salva como pendente!");
         limparFormularioVenda();
         setTimeout(() => (window.location.href = "index.html"), 600);
       } catch (e) {
-        toastError(e.message || "Falha ao salvar pendente.");
+        toastError(e.message || "Falha ao salvar como pendente.");
+      }
+    });
+
+    // confirmar pendente -> envia pro backend
+    btnConfirmarFinalizacao?.addEventListener("click", async () => {
+      try {
+        const recebidoCents = toCents(valorRecebidoFinalizar.value);
+        const totalCents = readMoneyText(totalFinalizarVenda.textContent);
+        if (recebidoCents < totalCents) {
+          return toastError("Valor recebido menor que o total.");
+        }
+
+        const descontoCents = toCents(descontoVenda.value);
+
+        const body = {
+          clienteId: Number(selectedCliente.id),
+          formaPagamento: String(formaPagamento.value), // DINHEIRO/CARTAO_CREDITO/...
+          desconto: Number(fromCents(descontoCents)),
+          observacao: (observacoesVenda?.value || "").trim() || null,
+          // entrega não se aplica aqui; é retirada na loja
+          itens: carrinho.map((it) => ({
+            produtoId: Number(it.id),
+            quantidade: Number(it.quantidade),
+            precoUnitario: Number(fromCents(it.precoCents)),
+            // se você capturar validade por item no front, adicione aqui
+          })),
+          status: "LOJA",
+        };
+
+        await api("POST", "/api/vendas", body);
+
+        finalizarVendaModal.hide();
+        toastSuccess("Venda finalizada com sucesso!");
+        limparFormularioVenda();
+        setTimeout(() => (window.location.href = "index.html"), 600);
+      } catch (e) {
+        toastError(e.message || "Falha ao finalizar venda.");
       }
     });
 
     // cancelar venda
     btnCancelarVenda?.addEventListener("click", () => {
       if (!window.Swal) {
-        if (confirm("Cancelar a venda?")) {
-          limparFormularioVenda();
-          window.location.href = "index.html";
-        }
+        if (confirm("Cancelar a venda?")) { limparFormularioVenda(); window.location.href = "index.html"; }
         return;
       }
       Swal.fire({
@@ -641,17 +658,14 @@
       }).then((r) => {
         if (r.isConfirmed) {
           limparFormularioVenda();
-          Swal.fire({
-            icon: "success",
-            title: "Venda Cancelada",
-            text: "A venda foi cancelada com sucesso.",
-          }).then(() => (window.location.href = "index.html"));
+          Swal.fire({ icon: "success", title: "Venda Cancelada", text: "A venda foi cancelada com sucesso." })
+            .then(() => (window.location.href = "index.html"));
         }
       });
     });
   }
 
-
+  // reset
   function limparFormularioVenda() {
     carrinho = [];
     atualizarListaProdutos();
@@ -668,9 +682,9 @@
     precoProduto.value = "";
     subtotalProduto.value = "";
     descontoVenda.value = "0.00";
-    formaPagamento.value = "dinheiro";
-    observacoesVenda && (observacoesVenda.value = "");
-    motoristaVenda && (motoristaVenda.value = "");
-    dataEntrega && (dataEntrega.value = "");
+    formaPagamento.value = "DINHEIRO"; // ENUM
+    if (observacoesVenda) observacoesVenda.value = "";
+    if (motoristaVenda) motoristaVenda.value = "";
+    if (dataEntrega) dataEntrega.value = "";
   }
 })();
