@@ -3,13 +3,19 @@ import type { Config } from 'jest';
 const config: Config = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  testMatch: ['**/tests/**/*.test.ts'],
+
+  testMatch: [
+    '**/tests/**/*.(test|unit|integration|spec).ts'
+  ],
+
   moduleFileExtensions: ['ts', 'js', 'json'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
+
   setupFilesAfterEnv: ['<rootDir>/tests/setup/common.ts'],
-  verbose: true
+
+  verbose: true,
 };
 
 export default config;

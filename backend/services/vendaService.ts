@@ -7,7 +7,7 @@ type ItemInputRaw = {
   idProduto?: number;
   produtoId?: number;
   quantidade: number;
-  precoUnitario: number; // BRL (ex.: 10.00)
+  precoUnitario: number;
   validade?: string | Date | null;
   observacao?: string | null;
 };
@@ -21,12 +21,12 @@ type ItemInput = {
 
 type CriarVendaDTO = {
   clienteId: number;
-  usuarioId: number; // vendedor (vem do token no controller)
+  usuarioId: number;
   itens?: ItemInputRaw[];
   formaPagamento?: FormaPagamento | string | null;
-  desconto?: number; // BRL
+  desconto?: number;
   observacao?: string | null;
-  status?: StatusVenda | string; // pode vir "PENDENTE" do front -> mapeamos para ABERTA
+  status?: StatusVenda | string;
 };
 
 type AtualizarItemDTO = Partial<
@@ -55,7 +55,6 @@ function normalizeItem(i: ItemInputRaw): ItemInput {
 function normalizeFormaPagamento(v: FormaPagamento | string | null | undefined): FormaPagamento | null {
   if (v == null) return null;
   const raw = String(v).trim().toUpperCase().replace(/[\s-]+/g, "_");
-  // sinônimos
   const map: Record<string, FormaPagamento> = {
     DINHEIRO: "DINHEIRO",
     PIX: "PIX",
@@ -79,14 +78,13 @@ function normalizeFormaPagamento(v: FormaPagamento | string | null | undefined):
 function normalizeStatusVenda(v: StatusVenda | string | null | undefined): StatusVenda {
   if (v == null) return StatusVenda.ABERTA;
   const raw = String(v).trim().toUpperCase();
-  // seu enum não tem PENDENTE — interpretamos "PENDENTE" como ABERTA
   const map: Record<string, StatusVenda> = {
     ABERTA: StatusVenda.ABERTA,
     PAGA: StatusVenda.PAGA,
     CANCELADA: StatusVenda.CANCELADA,
     ENTREGUE: StatusVenda.ENTREGUE,
     LOJA: StatusVenda.LOJA,
-    PENDENTE: StatusVenda.ABERTA, // mapeamento
+    PENDENTE: StatusVenda.ABERTA,
   };
   const st = map[raw];
   if (!st) {
@@ -97,7 +95,7 @@ function normalizeStatusVenda(v: StatusVenda | string | null | undefined): Statu
   return st;
 }
 
-// ---------- Totais (agora c/ client injetável: prisma ou tx) ----------
+// ---------- Totais ----------
 async function recalcularTotais(
   vendaId: number,
   client: typeof prisma | Prisma.TransactionClient = prisma
@@ -137,27 +135,24 @@ export async function criarVenda(input: CriarVendaDTO) {
     status = undefined,
   } = input;
 
-  // validações
   const [cliente, vendedor] = await Promise.all([
     prisma.cliente.findUnique({ where: { id: clienteId }, select: { id: true } }),
     prisma.usuario.findUnique({ where: { id: usuarioId }, select: { id: true } }),
   ]);
-  if (!cliente) { const e = new Error("Cliente não encontrado."); (e as any).status = 400; throw e; }
-  if (!vendedor) { const e = new Error("Usuário (vendedor) não encontrado."); (e as any).status = 400; throw e; }
+  if (!cliente) throw new Error("Cliente não encontrado.");
+  if (!vendedor) throw new Error("Usuário (vendedor) não encontrado.");
 
-  // normalizações
   const itensNorm = (itens || []).map(normalizeItem);
   const formaPagamentoNorm = normalizeFormaPagamento(formaPagamento);
   const statusNorm = normalizeStatusVenda(status);
 
   return prisma.$transaction(async (tx) => {
-    // 1) cria venda base
     const venda = await tx.venda.create({
       data: {
         clienteId,
         usuarioId,
-        formaPagamento: formaPagamentoNorm, // pode ser null
-        status: statusNorm,                 // ABERTA por padrão (ou LOJA se vier)
+        formaPagamento: formaPagamentoNorm,
+        status: statusNorm,
         totalBruto: D(0),
         desconto: D(desconto || 0),
         totalLiquido: D(0),
@@ -165,14 +160,8 @@ export async function criarVenda(input: CriarVendaDTO) {
       },
     });
 
-    // 2) cria itens vinculando venda/produto
     for (const it of itensNorm) {
       const qtd = Number(it.quantidade || 0);
-      if (!qtd || qtd <= 0) {
-        const e = new Error("Item com quantidade inválida.");
-        (e as any).status = 400;
-        throw e;
-      }
       const preco = D(it.precoUnitario || 0);
       const subtotal = preco.mul(qtd);
 
@@ -189,10 +178,7 @@ export async function criarVenda(input: CriarVendaDTO) {
       });
     }
 
-    // 3) recalcula totais (usando a MESMA tx)
     await recalcularTotais(venda.id, tx);
-
-    // 4) retorna venda completa
     return tx.venda.findUnique({
       where: { id: venda.id },
       include: { itens: true, cliente: true, vendedor: true, entrega: true },
@@ -202,9 +188,10 @@ export async function criarVenda(input: CriarVendaDTO) {
 
 // ---------- Itens ----------
 export async function adicionarItem(vendaId: number, itemRaw: ItemInputRaw) {
-  const venda = await prisma.venda.findUnique({ where: { id: vendaId }, select: { status: true } });
-  if (!venda) { const e = new Error("Venda não encontrada."); (e as any).status = 404; throw e; }
-  if (venda.status !== StatusVenda.ABERTA) { const e = new Error("Só é possível alterar itens com venda ABERTA."); (e as any).status = 400; throw e; }
+  const venda = await prisma.venda.findUnique({ where: { id: vendaId } });
+  if (!venda) throw new Error("Venda não encontrada.");
+  if (venda.status !== StatusVenda.ABERTA)
+    throw new Error("Só é possível adicionar itens em venda ABERTA.");
 
   const item = normalizeItem(itemRaw);
   const qtd = Number(item.quantidade || 0);
@@ -223,17 +210,18 @@ export async function adicionarItem(vendaId: number, itemRaw: ItemInputRaw) {
     },
   });
 
-  const totais = await recalcularTotais(vendaId, prisma);
+  const totais = await recalcularTotais(vendaId);
   return { mensagem: "Item adicionado com sucesso", totais };
 }
 
 export async function atualizarItem(vendaId: number, itemId: number, data: AtualizarItemDTO) {
-  const venda = await prisma.venda.findUnique({ where: { id: vendaId }, select: { status: true } });
-  if (!venda) { const e = new Error("Venda não encontrada."); (e as any).status = 404; throw e; }
-  if (venda.status !== StatusVenda.ABERTA) { const e = new Error("Só é possível alterar itens com venda ABERTA."); (e as any).status = 400; throw e; }
+  const venda = await prisma.venda.findUnique({ where: { id: vendaId } });
+  if (!venda) throw new Error("Venda não encontrada.");
+  if (venda.status !== StatusVenda.ABERTA)
+    throw new Error("Só é possível editar itens em venda ABERTA.");
 
   const atual = await prisma.vendaItem.findUnique({ where: { id: itemId } });
-  if (!atual || atual.vendaId !== vendaId) { const e = new Error("Item não pertence à venda."); (e as any).status = 400; throw e; }
+  if (!atual || atual.vendaId !== vendaId) throw new Error("Item não pertence à venda.");
 
   const quantidade = data.quantidade ?? atual.quantidade;
   const precoUnitario = data.precoUnitario != null ? D(data.precoUnitario) : atual.precoUnitario;
@@ -245,158 +233,150 @@ export async function atualizarItem(vendaId: number, itemId: number, data: Atual
       quantidade,
       precoUnitario,
       subtotal,
-      validade:
-        data.validade === undefined
-          ? atual.validade
-          : data.validade
-            ? new Date(data.validade as any)
-            : null,
+      validade: data.validade ? new Date(data.validade) : atual.validade,
       observacao: data.observacao ?? atual.observacao,
     },
   });
 
-  const totais = await recalcularTotais(vendaId, prisma);
+  const totais = await recalcularTotais(vendaId);
   return { mensagem: "Item atualizado com sucesso", totais };
 }
 
 export async function removerItem(vendaId: number, itemId: number) {
-  const venda = await prisma.venda.findUnique({ where: { id: vendaId }, select: { status: true } });
-  if (!venda) { const e = new Error("Venda não encontrada."); (e as any).status = 404; throw e; }
-  if (venda.status !== StatusVenda.ABERTA) { const e = new Error("Só é possível alterar itens com venda ABERTA."); (e as any).status = 400; throw e; }
+  const venda = await prisma.venda.findUnique({ where: { id: vendaId } });
+  if (!venda) throw new Error("Venda não encontrada.");
+  if (venda.status !== StatusVenda.ABERTA)
+    throw new Error("Só é possível remover itens em venda ABERTA.");
 
   const item = await prisma.vendaItem.findUnique({ where: { id: itemId } });
-  if (!item || item.vendaId !== vendaId) { const e = new Error("Item não pertence à venda."); (e as any).status = 400; throw e; }
+  if (!item || item.vendaId !== vendaId) throw new Error("Item não pertence à venda.");
 
   await prisma.vendaItem.delete({ where: { id: itemId } });
-  const totais = await recalcularTotais(vendaId, prisma);
+  const totais = await recalcularTotais(vendaId);
   return { mensagem: "Item removido com sucesso", totais };
 }
 
-// ---------- Pagamento ----------
-// services/vendaService.ts
+// ---------- Pagamento (baixa de estoque aqui) ----------
 export async function confirmarPagamento(vendaId: number, formaPagamento: FormaPagamento, desconto?: number) {
-  const venda = await prisma.venda.findUnique({
-    where: { id: vendaId },
-    include: { itens: true },
+  return prisma.$transaction(async (tx) => {
+    const venda = await tx.venda.findUnique({
+      where: { id: vendaId },
+      include: { itens: true },
+    });
+    if (!venda) throw new Error("Venda não encontrada.");
+
+    if (venda.status !== StatusVenda.ABERTA && venda.status !== StatusVenda.LOJA) {
+      throw new Error("Pagamento só pode ser confirmado com venda ABERTA ou LOJA.");
+    }
+
+    // ✅ Validação de estoque antes de baixar
+    for (const it of venda.itens) {
+      const produto = await tx.produto.findUnique({
+        where: { id: it.produtoId },
+        select: { nome: true, estoqueAtual: true },
+      });
+      if (!produto) throw new Error(`Produto ${it.produtoId} não encontrado.`);
+      if (produto.estoqueAtual < it.quantidade) {
+        throw new Error(`Estoque insuficiente para ${produto.nome}. Disponível: ${produto.estoqueAtual}`);
+      }
+    }
+
+    // ✅ Baixa de estoque
+    for (const it of venda.itens) {
+      await tx.produto.update({
+        where: { id: it.produtoId },
+        data: { estoqueAtual: { decrement: it.quantidade } },
+      });
+    }
+
+    if (typeof desconto === "number") {
+      await tx.venda.update({ where: { id: vendaId }, data: { desconto: D(desconto) } });
+    }
+
+    const totais = await recalcularTotais(vendaId, tx);
+
+    const atualizado = await tx.venda.update({
+      where: { id: vendaId },
+      data: { formaPagamento, status: StatusVenda.PAGA },
+      include: { itens: true, cliente: true, vendedor: true, entrega: true },
+    });
+
+    return { mensagem: "Pagamento confirmado e estoque atualizado", venda: atualizado, totais };
   });
-  if (!venda) { const e = new Error("Venda não encontrada."); (e as any).status = 404; throw e; }
-
-  // ✅ aceitar LOJA também
-  if (venda.status !== StatusVenda.ABERTA && venda.status !== StatusVenda.PAGA && venda.status !== StatusVenda.LOJA) {
-    const e = new Error("Pagamento só pode ser confirmado com venda ABERTA, PAGA ou LOJA.");
-    (e as any).status = 400; throw e;
-  }
-
-  if (typeof desconto === "number") {
-    await prisma.venda.update({ where: { id: vendaId }, data: { desconto: D(desconto) } });
-  }
-  const totais = await recalcularTotais(vendaId);
-
-  const atualizado = await prisma.venda.update({
-    where: { id: vendaId },
-    data: { formaPagamento, status: StatusVenda.PAGA },
-    include: { itens: true, cliente: true, vendedor: true, entrega: true },
-  });
-
-  return { mensagem: "Pagamento confirmado", venda: atualizado, totais };
 }
 
-
-// ---------- Entrega ----------
-type AtualizarEntregaDTO = {
-  motoristaId?: number | null;
-  status?: StatusEntrega;
-  dataSaida?: string | Date | null;
-  dataPrevista?: string | Date | null;
-  dataEntrega?: string | Date | null;
-  observacao?: string | null;
-};
-export async function upsertEntrega(vendaId: number, data: AtualizarEntregaDTO) {
-  const venda = await prisma.venda.findUnique({ where: { id: vendaId }, select: { id: true } });
-  if (!venda) { const e = new Error("Venda não encontrada."); (e as any).status = 404; throw e; }
-
-  const payload: any = {};
-  if ("motoristaId" in data) payload.motoristaId = data.motoristaId ?? null;
-  if (data.status) payload.status = data.status;
-  if ("dataSaida" in data) payload.dataSaida = data.dataSaida ? new Date(data.dataSaida) : null;
-  if ("dataPrevista" in data) payload.dataPrevista = data.dataPrevista ? new Date(data.dataPrevista) : null;
-  if ("dataEntrega" in data) payload.dataEntrega = data.dataEntrega ? new Date(data.dataEntrega) : null;
-  if ("observacao" in data) payload.observacao = data.observacao ?? null;
+// ---------- Entregas ----------
+export async function upsertEntrega(vendaId: number, data: any) {
+  const venda = await prisma.venda.findUnique({ where: { id: vendaId } });
+  if (!venda) throw new Error("Venda não encontrada.");
 
   const existe = await prisma.entrega.findUnique({ where: { vendaId } });
   const entrega = existe
-    ? await prisma.entrega.update({ where: { vendaId }, data: payload })
-    : await prisma.entrega.create({ data: { vendaId, ...payload } });
+    ? await prisma.entrega.update({ where: { vendaId }, data })
+    : await prisma.entrega.create({ data: { vendaId, ...data } });
 
   return { mensagem: "Entrega atualizada", entrega };
 }
 
-// ---------- Confirmar entrega ----------
 export async function confirmarEntrega(vendaId: number) {
   const venda = await prisma.venda.findUnique({
     where: { id: vendaId },
-    include: { itens: true, entrega: true },
+    include: { entrega: true },
   });
-  if (!venda) { const e = new Error("Venda não encontrada."); (e as any).status = 404; throw e; }
-  if (venda.itens.length === 0) { const e = new Error("Venda sem itens."); (e as any).status = 400; throw e; }
+  if (!venda) throw new Error("Venda não encontrada.");
 
-  await prisma.$transaction(async (tx) => {
-    // valida estoque
-    for (const it of venda.itens) {
-      const produto = await tx.produto.findUnique({ where: { id: it.produtoId }, select: { id: true, estoqueAtual: true } });
-      if (!produto) throw new Error(`Produto ${it.produtoId} não encontrado.`);
-      if (produto.estoqueAtual < it.quantidade) {
-        const e: any = new Error(`Estoque insuficiente para o produto ${it.produtoId}.`);
-        e.status = 409;
-        throw e;
+  const now = new Date();
+  const entrega = venda.entrega
+    ? await prisma.entrega.update({
+      where: { vendaId },
+      data: { status: StatusEntrega.ENTREGUE, dataEntrega: now },
+    })
+    : await prisma.entrega.create({
+      data: { vendaId, status: StatusEntrega.ENTREGUE, dataEntrega: now },
+    });
+
+  const vendaAtualizada = await prisma.venda.update({
+    where: { id: vendaId },
+    data: { status: StatusVenda.ENTREGUE },
+    include: { entrega: true, cliente: true, vendedor: true, itens: true },
+  });
+
+  return { mensagem: "Entrega confirmada", entrega, venda: vendaAtualizada };
+}
+
+// ---------- Cancelar venda (reverte estoque se já pago) ----------
+export async function cancelarVenda(vendaId: number) {
+  return prisma.$transaction(async (tx) => {
+    const venda = await tx.venda.findUnique({
+      where: { id: vendaId },
+      include: { itens: true },
+    });
+    if (!venda) throw new Error("Venda não encontrada.");
+
+    if (venda.status === StatusVenda.ENTREGUE) {
+      throw new Error("Não é possível cancelar venda já entregue.");
+    }
+
+    // ✅ devolve estoque se já havia sido baixado
+    if (venda.status === StatusVenda.PAGA) {
+      for (const it of venda.itens) {
+        await tx.produto.update({
+          where: { id: it.produtoId },
+          data: { estoqueAtual: { increment: it.quantidade } },
+        });
       }
     }
-    // baixa estoque
-    for (const it of venda.itens) {
-      await tx.produto.update({ where: { id: it.produtoId }, data: { estoqueAtual: { decrement: it.quantidade } } });
-    }
 
-    // grava validade por cliente/produto quando houver
-    const cliId = (await tx.venda.findUnique({ where: { id: vendaId }, select: { clienteId: true } }))!.clienteId;
-    for (const it of venda.itens) {
-      if (!it.validade) continue;
-      await tx.clienteProdutoValidade.upsert({
-        where: { clienteId_produtoId: { clienteId: cliId, produtoId: it.produtoId } },
-        update: { validade: it.validade },
-        create: { clienteId: cliId, produtoId: it.produtoId, validade: it.validade },
-      });
-    }
+    await tx.venda.update({
+      where: { id: vendaId },
+      data: { status: StatusVenda.CANCELADA },
+    });
 
-    // status venda / entrega
-    await tx.venda.update({ where: { id: vendaId }, data: { status: StatusVenda.ENTREGUE } });
-    const now = new Date();
-    const existe = await tx.entrega.findUnique({ where: { vendaId } });
-    if (existe) {
-      await tx.entrega.update({ where: { vendaId }, data: { status: StatusEntrega.ENTREGUE, dataEntrega: now } });
-    } else {
-      await tx.entrega.create({ data: { vendaId, status: StatusEntrega.ENTREGUE, dataEntrega: now } });
-    }
+    return { mensagem: "Venda cancelada e estoque revertido (se aplicável)" };
   });
-
-  const atualizado = await prisma.venda.findUnique({
-    where: { id: vendaId },
-    include: { itens: true, entrega: true, cliente: true, vendedor: true },
-  });
-
-  return { mensagem: "Entrega confirmada, estoque baixado", venda: atualizado };
 }
 
-// ---------- Cancelar venda ----------
-export async function cancelarVenda(vendaId: number) {
-  const venda = await prisma.venda.findUnique({ where: { id: vendaId }, select: { status: true } });
-  if (!venda) { const e = new Error("Venda não encontrada."); (e as any).status = 404; throw e; }
-  if (venda.status === StatusVenda.ENTREGUE) { const e = new Error("Não é possível cancelar venda já entregue."); (e as any).status = 400; throw e; }
-
-  await prisma.venda.update({ where: { id: vendaId }, data: { status: StatusVenda.CANCELADA } });
-  return { mensagem: "Venda cancelada" };
-}
-
-// ---------- Buscar/Listar ----------
+// ---------- Buscar / Listar / Comprovante ----------
 export async function buscarVendaPorId(vendaId: number) {
   const venda = await prisma.venda.findUnique({
     where: { id: vendaId },
@@ -407,14 +387,9 @@ export async function buscarVendaPorId(vendaId: number) {
       itens: { include: { produto: true } },
     },
   });
-  if (!venda) {
-    const e = new Error("Venda não encontrada.");
-    (e as any).status = 404;
-    throw e;
-  }
+  if (!venda) throw new Error("Venda não encontrada.");
   return venda;
 }
-
 
 type ListarFiltro = {
   clienteId?: number;
@@ -444,7 +419,8 @@ export async function listarVendas(f: ListarFiltro = {}) {
     prisma.venda.findMany({
       where,
       orderBy: { dataVenda: "desc" },
-      skip, take,
+      skip,
+      take,
       include: { cliente: true, vendedor: true, entrega: true, itens: true },
     }),
   ]);
@@ -452,13 +428,12 @@ export async function listarVendas(f: ListarFiltro = {}) {
   return { page, perPage: take, total, totalPages: Math.ceil(total / take), data };
 }
 
-// ---------- Comprovante ----------
 export async function gerarComprovante(vendaId: number) {
   const v = await prisma.venda.findUnique({
     where: { id: vendaId },
     include: { cliente: true, vendedor: true, itens: { include: { produto: true } } },
   });
-  if (!v) { const e = new Error("Venda não encontrada."); (e as any).status = 404; throw e; }
+  if (!v) throw new Error("Venda não encontrada.");
 
   return {
     numero: v.id,

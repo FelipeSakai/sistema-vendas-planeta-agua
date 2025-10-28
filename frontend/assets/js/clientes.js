@@ -20,42 +20,71 @@
     currentDeleteId: null,
   };
 
-  // ===== Helpers de formatação =====
+  // ======== Funções utilitárias ========
+
+  // Apenas dígitos
   const digits = (s) => (s || '').replace(/\D+/g, '');
 
-  const formatCPF = (v) => {
-    const d = digits(v).slice(0, 11);
+  // ---------- TELEFONE ----------
+  function formatPhone(value) {
+    const d = digits(value).slice(0, 11);
+    if (!d) return '';
+    if (d.length <= 2) return `(${d}`;
+    if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+    if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+    return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+  }
+
+  function formatPhoneInput(input) {
+    const posAntes = input.selectionStart;
+    const antes = input.value;
+
+    input.value = formatPhone(antes);
+
+    // Mantém cursor proporcional
+    const diff = input.value.length - antes.length;
+    input.setSelectionRange(posAntes + diff, posAntes + diff);
+  }
+
+  // ---------- CPF ----------
+  function formatCPF(value) {
+    const d = digits(value).slice(0, 11);
     if (d.length <= 3) return d;
     if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`;
     if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`;
     return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
-  };
+  }
 
-  const formatCNPJ = (v) => {
-    const d = digits(v).slice(0, 14);
+  function formatCPFInput(input) {
+    const posAntes = input.selectionStart;
+    const antes = input.value;
+
+    input.value = formatCPF(antes);
+
+    const diff = input.value.length - antes.length;
+    input.setSelectionRange(posAntes + diff, posAntes + diff);
+  }
+
+  // ---------- CNPJ ----------
+  function formatCNPJ(value) {
+    const d = digits(value).slice(0, 14);
     if (d.length <= 2) return d;
     if (d.length <= 5) return `${d.slice(0, 2)}.${d.slice(2)}`;
     if (d.length <= 8) return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5)}`;
     if (d.length <= 12) return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8)}`;
     return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12)}`;
-  };
+  }
 
-  const formatPhone = (v) => {
-    const d = digits(v).slice(0, 11);
-    if (!d) return '';
-    const ddd = d.slice(0, 2);
-    if (d.length <= 10) {
-      const p1 = d.slice(2, 6);
-      const p2 = d.slice(6);
-      if (!p1) return `(${ddd}`;
-      if (!p2) return `(${ddd}) ${p1}`;
-      return `(${ddd}) ${p1}-${p2}`;
-    } else {
-      const p1 = d.slice(2, 7);
-      const p2 = d.slice(7);
-      return `(${ddd}) ${p1}-${p2}`;
-    }
-  };
+  function formatCNPJInput(input) {
+    const posAntes = input.selectionStart;
+    const antes = input.value;
+
+    input.value = formatCNPJ(antes);
+
+    const diff = input.value.length - antes.length;
+    input.setSelectionRange(posAntes + diff, posAntes + diff);
+  }
+
 
   const isCNPJ = (v) => digits(v).length === 14;
   const deriveTipo = (cpfCnpj) => (isCNPJ(cpfCnpj) ? 'pessoa_juridica' : 'pessoa_fisica');
@@ -152,23 +181,10 @@
   const $btnConfirmarExclusao = $('#btnConfirmarExclusao');
 
   // ===== Máscaras nos inputs =====
-  $telefoneCliente?.addEventListener('input', () => {
-    const caret = $telefoneCliente.selectionStart;
-    $telefoneCliente.value = formatPhone($telefoneCliente.value);
-    $telefoneCliente.setSelectionRange(caret, caret);
-  });
+  $telefoneCliente?.addEventListener('input', () => formatPhoneInput($telefoneCliente));
+  $cpfCliente?.addEventListener('input', () => formatCPFInput($cpfCliente));
+  $cnpjCliente?.addEventListener('input', () => formatCNPJInput($cnpjCliente));
 
-  $cpfCliente?.addEventListener('input', () => {
-    const caret = $cpfCliente.selectionStart;
-    $cpfCliente.value = formatCPF($cpfCliente.value);
-    $cpfCliente.setSelectionRange(caret, caret);
-  });
-
-  $cnpjCliente?.addEventListener('input', () => {
-    const caret = $cnpjCliente.selectionStart;
-    $cnpjCliente.value = formatCNPJ($cnpjCliente.value);
-    $cnpjCliente.setSelectionRange(caret, caret);
-  });
 
   // ===== Render =====
   function renderRows(list) {
@@ -304,15 +320,24 @@
   }
 
   function montarEnderecoStr() {
-    const partes = [
-      $enderecoCliente.value,
-      $numeroCliente.value && `, ${$numeroCliente.value}`,
-      $complementoCliente.value && ` - ${$complementoCliente.value}`,
-      $bairroCliente.value && ` - ${$bairroCliente.value}`,
-      $cidadeCliente.value && ` - ${$cidadeCliente.value}`,
-      $estadoCliente.value && ` - ${$estadoCliente.value}`,
-      $cepCliente.value && ` - CEP ${$cepCliente.value}`,
-    ].filter(Boolean);
+    const rua = ($enderecoCliente.value || '').trim();
+    const numero = ($numeroCliente.value || '').trim();
+    const complemento = ($complementoCliente.value || '').trim();
+    const bairro = ($bairroCliente.value || '').trim();
+    const cidade = ($cidadeCliente.value || '').trim();
+    const estado = ($estadoCliente.value || '').trim();
+    const cep = ($cepCliente.value || '').trim();
+
+    const partes = [];
+
+    if (rua) partes.push(rua);
+    if (numero) partes.push(`, ${numero}`);
+    if (complemento) partes.push(` - ${complemento}`);
+    if (bairro) partes.push(` - ${bairro}`);
+    if (cidade) partes.push(` - ${cidade}`);
+    if (estado) partes.push(` - ${estado}`);
+    if (cep) partes.push(` - CEP ${cep}`);
+
     return partes.join('');
   }
 
@@ -345,6 +370,14 @@
     const res = await api('GET', `/api/clientes/${id}`);
     const cli = res?.dados || res;
 
+    $enderecoCliente.value = '';
+    $numeroCliente.value = '';
+    $complementoCliente.value = '';
+    $bairroCliente.value = '';
+    $cidadeCliente.value = '';
+    $estadoCliente.value = '';
+    $cepCliente.value = '';
+
     $('#clienteModalLabel').textContent = 'Editar Cliente';
     state.currentEditId = cli.id;
 
@@ -364,7 +397,7 @@
     $statusCliente.value = (cli.status === 'INATIVO' ? 'inativo' : 'ativo');
     $telefoneCliente.value = formatPhone(cli.telefone || '');
     $emailCliente.value = cli.email || '';
-    $enderecoCliente.value = cli.endereco || '';
+    if (cli.endereco) $enderecoCliente.value = cli.endereco;
 
     clienteModal.show();
   }
@@ -482,7 +515,7 @@
   $logout?.addEventListener('click', (e) => {
     e.preventDefault();
     try {
-      localStorage.removeItem('token'); 
+      localStorage.removeItem('token');
     } finally {
       const LOGIN_URL = location.pathname.includes('/pages/') ? '/pages/login.html' : 'login.html';
       location.assign(LOGIN_URL);

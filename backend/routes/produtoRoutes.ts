@@ -7,22 +7,42 @@ import { uploadProduto } from "../middlewares/upload";
 
 const router = Router();
 
-router.get("/produtos", auth([Cargo.ADMIN]), asyncHandler(produtoController.listarProdutos));
-router.get("/produtos/:id", auth([Cargo.ADMIN]), asyncHandler(produtoController.buscarProdutoPorId));
+router.get(
+    "/produtos",
+    auth([Cargo.ADMIN]),
+    asyncHandler(produtoController.listarProdutos)
+);
 
-router.post("/produtos",
+router.get(
+    "/produtos/:id",
+    auth([Cargo.ADMIN]),
+    asyncHandler(produtoController.buscarProdutoPorId)
+);
+
+router.post(
+    "/produtos",
     auth([Cargo.ADMIN]),
     uploadProduto.single("imagem"),
     asyncHandler(produtoController.criarProduto)
 );
 
-router.put("/produtos/:id",
+router.put(
+    "/produtos/:id",
     auth([Cargo.ADMIN]),
     uploadProduto.single("imagem"),
     asyncHandler(produtoController.atualizarProduto)
 );
 
-router.delete("/produtos/:id", auth([Cargo.ADMIN]), asyncHandler(produtoController.excluirProduto));
-router.patch("/produtos/:id/estoque", auth([Cargo.ADMIN]), asyncHandler(produtoController.ajustarEstoque));
+router.delete(
+    "/produtos/:id",
+    auth([Cargo.ADMIN]),
+    asyncHandler(produtoController.excluirProduto)
+);
+
+router.patch(
+    "/produtos/:id/estoque",
+    auth([Cargo.ADMIN]),
+    asyncHandler(produtoController.ajustarEstoque)
+);
 
 export default router;

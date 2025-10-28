@@ -16,6 +16,13 @@ type CriarProdutoDTO = {
   imageUrl?: string | null;
 };
 
+type ListarProdutosParams = {
+  geral?: string;
+  tipo?: string;
+  page?: number;
+  perPage?: number;
+};
+
 type AtualizarProdutoDTO = Partial<CriarProdutoDTO>;
 
 // helpers
@@ -58,36 +65,38 @@ export async function criarProduto(data: CriarProdutoDTO) {
   return produto;
 }
 
-export async function listarProdutos(filtro?: ListarProdutosFiltro) {
-  const { geral, tipo, page = 1, perPage = 12 } = filtro || {};
+export async function listarProdutos(params: ListarProdutosParams) {
+  const page = Math.max(1, Number(params.page ?? 1));
+  const take = Math.min(100, Math.max(1, Number(params.perPage ?? 12)));
+  const skip = (page - 1) * take;
+
   const where: any = {};
-  if (tipo && tipo.trim()) where.tipo = { contains: tipo.trim(), mode: "insensitive" };
-  if (geral && geral.trim()) {
-    const t = geral.trim();
-    where.OR = [
-      { nome: { contains: t, mode: "insensitive" } },
-      { tipo: { contains: t, mode: "insensitive" } },
-    ];
+  const termo = (params.geral ?? "").trim();
+  if (termo) {
+    where.nome = { contains: termo, mode: "insensitive" }; // aceita "g"
+  }
+  if (params.tipo) {
+    where.tipo = params.tipo; // se você tiver esse campo
   }
 
-  const take = Math.max(1, perPage);
-  const skip = (Math.max(1, page) - 1) * take;
-
-  const [total, data] = await Promise.all([
-    prisma.produto.count({ where }),
+  const [data, total] = await Promise.all([
     prisma.produto.findMany({
-      where, orderBy: { criadoEm: "desc" }, skip, take,
-      select: {
-        id: true, nome: true, tipo: true, preco: true,
-        estoqueAtual: true, imageUrl: true, criadoEm: true, atualizadoEm: true,
-      },
+      where,
+      orderBy: { nome: "asc" },
+      skip,
+      take,
     }),
+    prisma.produto.count({ where }),
   ]);
 
-  const totalPages = Math.max(1, Math.ceil(total / take));
-  return { page, perPage: take, total, totalPages, data };
+  return {
+    data,
+    page,
+    perPage: take,
+    total,
+    totalPages: Math.max(1, Math.ceil(total / take)),
+  };
 }
-
 export async function buscarProdutoPorId(id: string) {
   const idNum = Number(id);
   if (!Number.isFinite(idNum)) { const e = new Error("ID inválido."); (e as any).status = 400; throw e; }

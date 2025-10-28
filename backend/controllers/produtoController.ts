@@ -22,13 +22,21 @@ export const criarProduto = async (req: Request, res: Response) => {
 };
 
 export const listarProdutos = async (req: Request, res: Response) => {
-  const { geral = "", tipo, page = "1", perPage = "12" } = req.query;
+  const termo =
+    (req.query.q as string) ??
+    (req.query.geral as string) ??
+    (req.query.nome as string) ??
+    "";
+
+  const { tipo, page = "1", perPage = "12" } = req.query;
+
   const out = await produtoService.listarProdutos({
-    geral: String(geral),
+    geral: String(termo || ""),               
     tipo: (tipo as string) || undefined,
     page: Number(page),
     perPage: Number(perPage),
   });
+
   respostaSucesso(res, "Lista de produtos carregada com sucesso", out);
 };
 

@@ -138,8 +138,14 @@
       const estoqueTxt = `${p.estoqueAtual ?? 0} unidades`;
       let imgUrl = '';
       if (p.imageUrl) {
-        imgUrl = p.imageUrl.startsWith('http') ? p.imageUrl : `${API_BASE}${p.imageUrl}`;
+        const caminho = p.imageUrl.startsWith('/')
+          ? p.imageUrl
+          : `/${p.imageUrl}`;
+        imgUrl = p.imageUrl.startsWith('http')
+          ? p.imageUrl
+          : `${API_BASE}${caminho}`;
       }
+
       const imgHtml = imgUrl
         ? `<img src="${imgUrl}" alt="${p.nome}" class="produto-img mb-2" style="max-width:100%;max-height:120px;object-fit:contain;">`
         : `<div class="produto-img-placeholder mb-2" style="width:100%;height:120px;background:#eee;display:flex;align-items:center;justify-content:center;color:#aaa;">Sem imagem</div>`;

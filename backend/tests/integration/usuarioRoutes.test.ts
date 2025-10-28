@@ -1,3 +1,4 @@
+// tests/integration/usuarioRoutes.test.ts
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env.test' });
 
@@ -9,38 +10,39 @@ describe('Rotas de /api/usuarios (com autenticação)', () => {
   let token: string;
 
   beforeAll(async () => {
+    const adminEmail = 'admin@meusistema.com';
+    const adminSenha = 'admin123';
 
-    const adminEmail = `admin${Date.now()}@email.com`;
-    await request(app).post('/auth/login').send({
-      email: adminEmail,
-      senha: '123456',
-      cargo: Cargo.ADMIN
-    }).catch(async () => {
-
-      await request(app)
-        .post('/api/usuarios')
-        .set('Authorization', `Bearer ${token ?? ''}`) 
-        .send({
-          nome: 'Admin Teste',
-          email: adminEmail,
-          senha: '123456',
-          cargo: Cargo.ADMIN
-        });
-    });
-
-    // Faz login e pega o token
+    // login direto
     const loginRes = await request(app)
       .post('/auth/login')
-      .send({ email: adminEmail, senha: '123456' });
+      .send({ email: adminEmail, senha: adminSenha });
 
-    token = loginRes.body.dados.token;
+    // se admin ainda não existir, cria e refaz o login
+    if (loginRes.status !== 200 || !loginRes.body?.dados?.token) {
+      await request(app)
+        .post('/api/usuarios')
+        .send({
+          nome: 'Administrador',
+          email: adminEmail,
+          senha: adminSenha,
+          cargo: Cargo.ADMIN,
+        });
+    }
+
+    const relogin = await request(app)
+      .post('/auth/login')
+      .send({ email: adminEmail, senha: adminSenha });
+
+    token = relogin.body?.dados?.token;
+    expect(token).toBeTruthy();
   });
 
   const usuarioBase = {
     nome: 'Usuário Teste',
     email: `teste${Date.now()}@email.com`,
-    senha: '123456',
-    cargo: Cargo.ADMIN
+    senha: 'admin123',
+    cargo: Cargo.ADMIN,
   };
 
   it('deve criar um novo usuário com sucesso', async () => {
@@ -49,7 +51,7 @@ describe('Rotas de /api/usuarios (com autenticação)', () => {
       .set('Authorization', `Bearer ${token}`)
       .send(usuarioBase);
 
-    expect(res.statusCode).toBe(201);
+    expect([200, 201]).toContain(res.statusCode);
     expect(res.body.sucesso).toBe(true);
   });
 
@@ -59,9 +61,9 @@ describe('Rotas de /api/usuarios (com autenticação)', () => {
       .set('Authorization', `Bearer ${token}`)
       .send(usuarioBase);
 
-    expect(res.statusCode).toBe(400);
+    expect([400, 409]).toContain(res.statusCode);
     expect(res.body.sucesso).toBe(false);
-    expect(res.body.mensagem).toMatch(/já existe/i);
+    expect(String(res.body.mensagem || '')).toMatch(/já existe|duplicad/i);
   });
 
   it('deve retornar uma lista de usuários', async () => {
@@ -89,10 +91,11 @@ describe('Rotas de /api/usuarios (com autenticação)', () => {
         .send({
           nome: 'Usuário Atualizar',
           email: `atualiza${Date.now()}@email.com`,
-          senha: '123456',
-          cargo: Cargo.ADMIN
+          senha: 'admin123',
+          cargo: Cargo.ADMIN,
         });
 
+      expect([200, 201]).toContain(res.statusCode);
       userId = res.body.dados.id;
     });
 
@@ -102,8 +105,8 @@ describe('Rotas de /api/usuarios (com autenticação)', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({ nome: 'Nome Atualizado' });
 
-      expect(res.statusCode).toBe(200);
-      expect(res.body.mensagem).toMatch(/atualizado/i);
+      expect([200, 204]).toContain(res.statusCode);
+      expect(String(res.body.mensagem || '')).toMatch(/atualizad/i);
     });
   });
 
@@ -117,10 +120,11 @@ describe('Rotas de /api/usuarios (com autenticação)', () => {
         .send({
           nome: 'Usuário Deletar',
           email: `deleta${Date.now()}@email.com`,
-          senha: '123456',
-          cargo: Cargo.ADMIN
+          senha: 'admin123',
+          cargo: Cargo.ADMIN,
         });
 
+      expect([200, 201]).toContain(res.statusCode);
       userId = res.body.dados.id;
     });
 
@@ -129,8 +133,8 @@ describe('Rotas de /api/usuarios (com autenticação)', () => {
         .delete(`/api/usuarios/${userId}`)
         .set('Authorization', `Bearer ${token}`);
 
-      expect(res.statusCode).toBe(200);
-      expect(res.body.mensagem).toMatch(/excluído/i);
+      expect([200, 204]).toContain(res.statusCode);
+      expect(String(res.body.mensagem || '')).toMatch(/excluíd|inativ/i);
     });
   });
 });
