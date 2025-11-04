@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import * as vendaService from "../services/vendaService";
 import { respostaSucesso } from "../utils/response";
-import { FormaPagamento, StatusVenda } from "@prisma/client";
+import { Cargo, FormaPagamento, StatusVenda } from "@prisma/client";
+import { prisma } from "../lib/prisma";
 
 
 export async function criarVenda(req: Request, res: Response) {
@@ -203,6 +204,24 @@ export async function comprovante(req: Request, res: Response) {
         return res.status(e.status || 500).json({
             sucesso: false,
             mensagem: e.message || "Erro ao gerar comprovante",
+        });
+    }
+}
+
+export async function listarMotoristas(req: Request, res: Response) {
+    try {
+        const motoristas = await prisma.usuario.findMany({
+            where: { cargo: Cargo.MOTORISTA },
+            select: { id: true, nome: true },
+            orderBy: { nome: "asc" },
+        });
+
+        return respostaSucesso(res, "Lista de motoristas", motoristas);
+    } catch (e: any) {
+        console.error("❌ Erro ao listar motoristas:", e);
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: e.message || "Erro ao listar motoristas",
         });
     }
 }

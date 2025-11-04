@@ -2,6 +2,10 @@ document.addEventListener('DOMContentLoaded', function () {
   const loginForm = document.getElementById('loginForm');
   const submitBtn = loginForm?.querySelector('button[type="submit"]');
 
+  if (!localStorage.getItem("API_BASE")) {
+    localStorage.setItem("API_BASE", "http://localhost:3333");
+  }
+
   const API_BASE = localStorage.getItem('API_BASE') || 'http://localhost:3333';
   const LOGIN_PATH = '/auth/login';
 

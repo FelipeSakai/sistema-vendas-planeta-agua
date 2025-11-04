@@ -27,5 +27,13 @@ router.patch("/vendas/:id/entrega/confirmar", auth([Cargo.ADMIN, Cargo.MOTORISTA
 // Comprovante
 router.get("/vendas/:id/comprovante", auth([Cargo.ADMIN, Cargo.FUNCIONARIO]), asyncHandler(vendaController.comprovante));
 
+// Motoristas 
+router.get(
+    "/vendas/motoristas",
+    auth([Cargo.ADMIN, Cargo.FUNCIONARIO, Cargo.MOTORISTA]),
+    asyncHandler(vendaController.listarMotoristas)
+);
+
+
 export default router;
 

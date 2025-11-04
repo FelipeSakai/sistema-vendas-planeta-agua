@@ -66,6 +66,7 @@
   // =========================
   document.addEventListener("DOMContentLoaded", async () => {
     await loadProdutos();
+    await loadMotoristas();
     configurarAutocomplete();
     configurarEventos();
     configurarModalCliente();
@@ -235,6 +236,26 @@
     } catch (e) {
       console.warn("Erro ao carregar produtos:", e);
       catalogoProdutos = [];
+    }
+  }
+  // =========================
+  // Motoristas
+  // =========================
+  async function loadMotoristas() {
+    const selectMotorista = document.getElementById("motoristaVenda");
+    if (!selectMotorista) return;
+
+    try {
+      const dados = await api("GET", "/api/usuarios?cargo=MOTORISTA&perPage=100");
+      const motoristas = dados?.data || dados || [];
+
+      selectMotorista.innerHTML = `
+      <option value="" selected disabled>Selecione o motorista</option>
+      ${motoristas.map(m => `<option value="${m.id}">${m.nome}</option>`).join("")}
+    `;
+    } catch (e) {
+      console.error("Erro ao carregar motoristas:", e);
+      selectMotorista.innerHTML = `<option value="">Erro ao carregar motoristas</option>`;
     }
   }
 
@@ -416,4 +437,58 @@
       subtotalProduto.value = "";
     });
   }
+  // =========================
+  // Finalizar Venda
+  // =========================
+  const btnFinalizarVenda = document.getElementById("btnFinalizarVenda");
+
+  if (btnFinalizarVenda) {
+    btnFinalizarVenda.addEventListener("click", async () => {
+      if (!clienteSelecionado) {
+        return Swal.fire("Atenção", "Selecione um cliente antes de finalizar.", "info");
+      }
+      if (!carrinho.length) {
+        return Swal.fire("Atenção", "Adicione produtos à venda antes de finalizar.", "info");
+      }
+
+      const motoristaId = document.getElementById("motoristaVenda")?.value || null;
+
+      const payload = {
+        clienteId: clienteSelecionado.id,
+        usuarioId: JSON.parse(localStorage.getItem("user") || "{}").id,
+        motoristaId: motoristaId ? Number(motoristaId) : null, // ✅ ADICIONADO
+        itens: carrinho.map((it) => ({
+          produtoId: Number(it.id),
+          quantidade: it.quantidade,
+          precoUnitario: fromCents(it.precoCents),
+          validade: it.validade ? `${it.validade}-12-31` : null,
+        })),
+        formaPagamento: document.getElementById("formaPagamento")?.value || "DINHEIRO",
+        desconto: Number(descontoVenda.value || 0),
+      };
+
+      try {
+        const venda = await api("POST", "/api/vendas", payload);
+        Swal.fire({
+          icon: "success",
+          title: "Venda concluída com sucesso!",
+          html: `
+    <p>Venda nº <strong>${venda.id}</strong> registrada para <strong>${clienteSelecionado.nome}</strong>.</p>
+  `,
+          timer: 2000,
+          showConfirmButton: false,
+        });
+
+        carrinho = [];
+        clienteSelecionado = null;
+        atualizarListaProdutos();
+        atualizarTotais();
+        renderClienteSelecionado();
+      } catch (e) {
+        console.error(e);
+        Swal.fire("Erro", e.message || "Falha ao registrar a venda.", "error");
+      }
+    });
+  }
+
 })();
