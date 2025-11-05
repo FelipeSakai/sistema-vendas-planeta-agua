@@ -229,16 +229,28 @@
         tabelaVendasBody.innerHTML = "";
         (payload?.vendas || []).forEach(v => {
             const tr = document.createElement("tr");
+
+            // monta a lista de produtos: nome + (quantidade)
+            let produtosTexto = "—";
+            if (Array.isArray(v.itens) && v.itens.length) {
+                produtosTexto = v.itens
+                    .map(it => `${safe(it.nome)} (${safe(it.quantidade)})`)
+                    .join(", ");
+            } else if (v.produtos) {
+                produtosTexto = v.produtos;
+            }
+
             tr.innerHTML = `
         <td>${safe(v.hora)}</td>
         <td>${safe(v.cliente)}</td>
-        <td>${safe(v.produtos)}</td>
+        <td>${produtosTexto}</td>
         <td>${safe(v.vendedor)}</td>
         <td>${safe(v.pagamento)}</td>
         <td class="text-end">${fmtBRL(v.valor)}</td>
-      `;
+        `;
+
             tabelaVendasBody.appendChild(tr);
-        });
+        })
     }
 
     // ======= VENDAS: Mensal =======

@@ -388,8 +388,7 @@
                                         href="#atual">Estoque Atual</a></li>
                                 <li class="nav-item"><a class="nav-link" id="movimentacao-tab" data-bs-toggle="tab"
                                         href="#movimentacao">Movimentação</a></li>
-                                <li class="nav-item"><a class="nav-link" id="validade-tab" data-bs-toggle="tab"
-                                        href="#validade">Validade</a></li>
+
                             </ul>
 
                             <div class="tab-content">
@@ -577,62 +576,7 @@
                                     </div>
                                 </div>
 
-                                <!-- Validade -->
-                                <div class="tab-pane fade" id="validade">
-                                    <div class="filter-section mb-4">
-                                        <div class="row g-3">
-                                            <div class="col-md-6">
-                                                <label for="periodoValidade" class="form-label">Período de
-                                                    Validade</label>
-                                                <select class="form-select" id="periodoValidade">
-                                                    <option value="30" selected>Vence em 30 dias</option>
-                                                    <option value="60">Vence em 60 dias</option>
-                                                    <option value="90">Vence em 90 dias</option>
-                                                    <option value="todos">Todos os produtos</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <button class="btn btn-primary w-100" id="gerarRelatorioValidade"><i
-                                                        class="bi bi-search me-1"></i> Gerar Relatório</button>
-                                            </div>
-                                        </div>
-                                    </div>
 
-                                    <div id="relatorioValidadeGerado">
-                                        <div class="daily-report-header">
-                                            <div class="daily-report-date">Produtos por Validade - <span
-                                                    id="periodoValidadeTexto"></span></div>
-                                            <button type="button" class="btn btn-outline-primary print-btn"
-                                                onclick="window.imprimirRelatorio()">
-                                                <i class="bi bi-printer"></i> Imprimir
-                                            </button>
-                                        </div>
-
-                                        <div class="card">
-                                            <div class="card-header">
-                                                <h5 class="mb-0">Produtos por Validade</h5>
-                                            </div>
-                                            <div class="card-body">
-                                                <div class="table-container">
-                                                    <table class="table">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Produto</th>
-                                                                <th>Lote</th>
-                                                                <th>Data de Validade</th>
-                                                                <th>Dias Restantes</th>
-                                                                <th>Quantidade</th>
-                                                                <th>Status</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody id="tabelaValidadeBody"></tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                </div>
 
                             </div><!-- /tab-content estoque -->
                         </div>
