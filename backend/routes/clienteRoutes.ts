@@ -6,10 +6,10 @@ import { Cargo } from "@prisma/client";
 
 const router = Router();
 
-router.get('/clientes', auth([Cargo.ADMIN]), asyncHandler(clienteController.listarClientes));
-router.post('/clientes', auth([Cargo.ADMIN]), asyncHandler(clienteController.criarCliente));
-router.get('/clientes/:id', auth([Cargo.ADMIN]), asyncHandler(clienteController.buscarClientePorId));
-router.put('/clientes/:id', auth([Cargo.ADMIN]), asyncHandler(clienteController.atualizarCliente));
-router.delete('/clientes/:id', auth([Cargo.ADMIN]), asyncHandler(clienteController.excluirCliente));
+router.get('/clientes', auth([Cargo.ADMIN, Cargo.FUNCIONARIO]), asyncHandler(clienteController.listarClientes));
+router.post('/clientes', auth([Cargo.ADMIN, Cargo.FUNCIONARIO]), asyncHandler(clienteController.criarCliente));
+router.get('/clientes/:id', auth([Cargo.ADMIN, Cargo.FUNCIONARIO]), asyncHandler(clienteController.buscarClientePorId));
+router.put('/clientes/:id', auth([Cargo.ADMIN, Cargo.FUNCIONARIO]), asyncHandler(clienteController.atualizarCliente));
+router.delete('/clientes/:id', auth([Cargo.ADMIN, Cargo.FUNCIONARIO]), asyncHandler(clienteController.excluirCliente));
 
 export default router;

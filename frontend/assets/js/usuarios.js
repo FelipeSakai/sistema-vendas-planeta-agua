@@ -68,19 +68,44 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     const text = await res.text();
-    let data; try { data = JSON.parse(text); } catch { data = { raw: text }; }
+    let data;
+    try { data = JSON.parse(text); }
+    catch { data = { raw: text }; }
 
-    if (res.status === 401 || res.status === 403) {
-      sessionStorage.setItem('lastAuthError', data?.error || 'Não autorizado');
-      localStorage.removeItem('token');
-      setTimeout(() => (window.location.href = 'login.html'), 10);
-      throw new Error(data?.error || 'Não autorizado');
+    // ===========================================
+    //        NOVO TRATAMENTO DE PERMISSÕES
+    // ===========================================
+    if (res.status === 403) {
+      Swal.fire({
+        icon: "error",
+        title: "Acesso negado",
+        text: data?.mensagem || data?.error || "Você não tem permissão para esta ação.",
+        confirmButtonColor: "#1e88e5"
+      });
+      throw new Error("Permissão negada");
     }
+
+    if (res.status === 401) {
+      Swal.fire({
+        icon: "warning",
+        title: "Sessão expirada",
+        text: "Faça login novamente.",
+        confirmButtonColor: "#1e88e5"
+      }).then(() => {
+        localStorage.removeItem("token");
+        window.location.href = "login.html";
+      });
+      throw new Error("Não autorizado");
+    }
+    // ===========================================
+
     if (!res.ok) {
-      throw new Error(data?.error || data?.message || data?.mensagem || `Erro ${res.status}`);
+      throw new Error(data?.error || data?.mensagem || data?.message || `Erro ${res.status}`);
     }
-    return data; // retorna o envelope {sucesso, mensagem, dados} OU o objeto cru
+
+    return data;
   }
+
 
   // helper para desembrulhar { sucesso, mensagem, dados }
   const unwrap = (resp) =>
@@ -371,6 +396,36 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         return;
       }
+      if (!nome || !email || (!id && !senha)) {
+        safeAlert({
+          icon: 'warning',
+          title: 'Campos obrigatórios',
+          text: id ? 'Nome e e-mail são obrigatórios.' : 'Nome, e-mail e senha são obrigatórios.',
+          confirmButtonColor: '#1e88e5'
+        });
+        return;
+      }
+
+      if (!emailRegex.test(email)) {
+        safeAlert({
+          icon: 'warning',
+          title: 'E-mail inválido',
+          text: 'Digite um e-mail no formato válido (ex: usuario@dominio.com)',
+          confirmButtonColor: '#1e88e5'
+        });
+        return;
+      }
+
+      if (senha && senha.length < 8) {
+        safeAlert({
+          icon: 'warning',
+          title: 'Senha muito curta',
+          text: 'A senha deve ter pelo menos 8 caracteres.',
+          confirmButtonColor: '#1e88e5'
+        });
+        return;
+      }
+
 
       let resp;
       if (id) {

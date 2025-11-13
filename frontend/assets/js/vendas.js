@@ -491,4 +491,120 @@
     });
   }
 
+  // ======================================================
+  //   MODO DE EDIÇÃO DE VENDA
+  // ======================================================
+
+  // 1) Detectar se existe ?id= na URL
+  const params = new URLSearchParams(window.location.search);
+  const vendaEditId = params.get("id");
+
+  // 2) Se tiver ID → carregar venda
+  if (vendaEditId) {
+    document.addEventListener("DOMContentLoaded", async () => {
+      try {
+        const venda = await api("GET", `/api/vendas/${vendaEditId}`);
+        preencherVendaParaEdicao(venda);
+      } catch (e) {
+        console.error("Erro ao carregar venda:", e);
+        Swal.fire("Erro", "Não foi possível carregar a venda para edição.", "error");
+      }
+    });
+  }
+
+  // FUNÇÃO PRINCIPAL DE POPULAR A TELA
+  function preencherVendaParaEdicao(v) {
+    // --------------------------
+    // CLIENTE
+    // --------------------------
+    clienteSelecionado = v.cliente;
+    renderClienteSelecionado();
+
+    // --------------------------
+    // PAGAMENTO
+    // --------------------------
+    document.getElementById("formaPagamento").value = v.formaPagamento || "DINHEIRO";
+    document.getElementById("descontoVenda").value = Number(v.desconto || 0);
+
+    // --------------------------
+    // OBSERVAÇÃO
+    // --------------------------
+    document.getElementById("observacoesVenda").value = v.observacao || "";
+
+    // --------------------------
+    // ENTREGA
+    // --------------------------
+    if (v.entrega) {
+      const mot = document.getElementById("motoristaVenda");
+      if (v.entrega.motoristaId) mot.value = String(v.entrega.motoristaId);
+
+      if (v.entrega.dataPrevista) {
+        document.getElementById("dataEntrega").value = v.entrega.dataPrevista.substring(0, 10);
+      }
+    }
+
+    // --------------------------
+    // RECRIAR CARRINHO
+    // --------------------------
+    carrinho = v.itens.map(it => ({
+      id: it.produtoId,
+      nome: it.produto?.nome || "Produto",
+      precoCents: Math.round(Number(it.precoUnitario) * 100),
+      quantidade: it.quantidade,
+      subtotalCents: Math.round(Number(it.subtotal) * 100),
+      validade: it.validade ? String(it.validade).substring(0, 4) : null
+    }));
+
+    atualizarListaProdutos();
+    atualizarTotais();
+
+    // --------------------------
+    // Botão vira "Salvar Alterações"
+    // --------------------------
+    btnFinalizarVenda.innerHTML = `<i class="bi bi-save me-2"></i> Salvar Alterações`;
+    btnFinalizarVenda.onclick = salvarEdicaoDaVenda;
+  }
+  // ======================================================
+  // FUNÇÃO PARA SALVAR ALTERAÇÕES
+  // ======================================================
+  async function salvarEdicaoDaVenda() {
+    try {
+      if (!clienteSelecionado) {
+        return Swal.fire("Atenção", "Selecione um cliente.", "info");
+      }
+
+      if (!carrinho.length) {
+        return Swal.fire("Atenção", "Adicione produtos.", "info");
+      }
+
+      // Atualiza itens um por um
+      for (const it of carrinho) {
+        await api("PUT", `/api/vendas/${vendaEditId}/itens/${it.id}`, {
+          quantidade: it.quantidade,
+          precoUnitario: fromCents(it.precoCents),
+          validade: it.validade ? `${it.validade}-12-31` : null
+        });
+      }
+
+      // Atualizar forma de pagamento e desconto
+      await api("PATCH", `/api/vendas/${vendaEditId}/pagamento`, {
+        formaPagamento: document.getElementById("formaPagamento").value,
+        desconto: Number(descontoVenda.value)
+      });
+
+      Swal.fire({
+        icon: "success",
+        title: "Venda atualizada com sucesso!",
+        timer: 1600,
+        showConfirmButton: false
+      }).then(() => {
+        window.location.href = "vendas.html";
+      });
+
+    } catch (e) {
+      console.error(e);
+      Swal.fire("Erro", e.message || "Falha ao salvar alterações.", "error");
+    }
+  }
+
 })();
