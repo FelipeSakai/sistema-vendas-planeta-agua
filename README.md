@@ -9,7 +9,7 @@ Sistema de gerenciamento de vendas e trocas de galões para empresas de distribu
 - Calcular automaticamente o total da venda.
 - Interface amigável com design responsivo para facilitar o uso em ambiente comercial.
 
----
+----
 
 ## 🧰 Tecnologias Utilizadas
 
