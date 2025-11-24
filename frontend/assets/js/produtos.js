@@ -13,12 +13,14 @@
       return {};
     }
 
-    // Se for FormData → NÃO coloca Content-Type
     if (isForm) {
       return { 'Authorization': `Bearer ${t}` };
     }
 
-    return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${t}` };
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${t}`,
+    };
   }
 
   const safeAlert = (opts) =>
@@ -26,10 +28,6 @@
       ? Swal.fire(opts)
       : alert(opts?.text || opts?.title || 'Aviso');
 
-
-  // =====================================================
-  //               FUNÇÃO API COM PERMISSÃO
-  // =====================================================
   async function api(method, path, body, isForm = false) {
     const res = await fetch(`${API_BASE}${path}`, {
       method,
@@ -42,30 +40,26 @@
     try { data = JSON.parse(text); }
     catch { data = { raw: text }; }
 
-    // 403 → Sem permissão
     if (res.status === 403) {
       safeAlert({
         icon: "error",
-        title: "Acesso Negado",
+        title: "Acesso negado",
         text: data?.mensagem || data?.error || "Você não tem permissão para esta ação.",
-        confirmButtonColor: "#1e88e5"
       });
       throw new Error("Permissão negada");
     }
 
-    // 401 → Token inválido ou expirado
     if (res.status === 401) {
       safeAlert({
         icon: "warning",
-        title: "Sessão Expirada",
+        title: "Sessão expirada",
         text: "Faça login novamente.",
-        confirmButtonColor: "#1e88e5"
       });
 
       setTimeout(() => {
         localStorage.removeItem("token");
         window.location.href = "login.html";
-      }, 10);
+      }, 200);
 
       throw new Error("Não autorizado");
     }
@@ -79,22 +73,21 @@
   }
 
   // =====================================================
-  //                    ESTADO DA PÁGINA
+  // ESTADO
   // =====================================================
   const state = {
     page: 1,
     perPage: 12,
     totalPages: 1,
     geral: '',
-    tipo: 'todos',
+    tipo: 'todos',       // "AGUA" | "GALAO" | "ACESSORIO" | "todos"
     estoqueFiltro: 'todos',
     currentEditId: null,
-    currentViewId: null,
     currentDeleteId: null,
   };
 
   // =====================================================
-  //               ELEMENTOS DA INTERFACE
+  // ELEMENTOS (com fallbacks pra evitar quebrar)
   // =====================================================
   const $grid = document.getElementById('produtosGrid');
   const $resumo = document.getElementById('produtosResumo');
@@ -102,17 +95,24 @@
 
   const $btnAdd = document.getElementById('btnAddProduto');
   const $search = document.getElementById('searchProduto');
-  const $filterCategoria = document.getElementById('filterCategoria');
+
+  // Filtro de categoria (topo)
+  const $filterCategoria =
+    document.getElementById('filterCategoria') ||
+    document.querySelector('.card #filterCategoria') ||
+    document.querySelector('.card #categoriaProduto') || // fallback pro seu HTML atual
+    null;
+
   const $filterEstoque = document.getElementById('filterEstoque');
 
-  const produtoModal = new bootstrap.Modal(document.getElementById('produtoModal'));
-  const viewModal = new bootstrap.Modal(document.getElementById('viewProdutoModal'));
-  const deleteModal = new bootstrap.Modal(document.getElementById('deleteProdutoModal'));
+  const produtoModalEl = document.getElementById('produtoModal');
+  const produtoModal = produtoModalEl ? new bootstrap.Modal(produtoModalEl) : null;
+  const deleteModalEl = document.getElementById('deleteProdutoModal');
+  const deleteModal = deleteModalEl ? new bootstrap.Modal(deleteModalEl) : null;
 
   const $produtoForm = document.getElementById('produtoForm');
   const $produtoModalLabel = document.getElementById('produtoModalLabel');
   const $nome = document.getElementById('nomeProduto');
-  const $categoria = document.getElementById('categoriaProduto');
   const $preco = document.getElementById('precoProduto');
   const $estoque = document.getElementById('estoqueProduto');
   const $btnSalvar = document.getElementById('btnSalvarProduto');
@@ -121,11 +121,12 @@
   const $wrapRemover = document.getElementById('wrapRemoverImg');
   const $remover = document.getElementById('removerImagem');
 
-  const $viewNome = document.getElementById('viewNomeProduto');
-  const $viewCategoria = document.getElementById('viewCategoriaProduto');
-  const $viewPreco = document.getElementById('viewPrecoProduto');
-  const $viewEstoque = document.getElementById('viewEstoqueProduto');
-  const $viewEstoqueBadge = document.getElementById('viewEstoqueBadge');
+  // Select da CATEGORIA dentro do MODAL
+  // tenta primeiro id novo (categoriaProdutoModal)
+  // se não achar, pega o que está dentro do modal com id categoriaProduto (teu HTML atual)
+  const $categoria =
+    document.getElementById('categoriaProdutoModal') ||
+    (produtoModalEl ? produtoModalEl.querySelector('#categoriaProduto') : null);
 
   const $deleteNome = document.getElementById('deleteProdutoNome');
   const $btnConfirmarExclusao = document.getElementById('btnConfirmarExclusao');
@@ -134,12 +135,12 @@
   $sair?.addEventListener('click', () => localStorage.removeItem('token'));
 
   // =====================================================
-  //                     FUNÇÕES ÚTEIS
+  // UTILS
   // =====================================================
   function formatMoney(v) {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
-      currency: 'BRL'
+      currency: 'BRL',
     }).format(Number(v || 0));
   }
 
@@ -161,8 +162,19 @@
     return `<span class="badge ${x.cls} produto-badge">${x.label}</span>`;
   }
 
+  // converte código → texto bonitinho pra mostrar no card
+  function tipoLabel(tipo) {
+    const t = (tipo || '').toUpperCase();
+    const map = {
+      AGUA: 'Água Mineral',
+      GALAO: 'Galão',
+      ACESSORIO: 'Acessório',
+    };
+    return map[t] || tipo || '-';
+  }
+
   // =====================================================
-  //                 PRÉ-VISUALIZAÇÃO DA IMAGEM
+  // PRÉ-VISUALIZAÇÃO DA IMAGEM
   // =====================================================
   $imgInput?.addEventListener('change', () => {
     const f = $imgInput.files?.[0];
@@ -175,7 +187,7 @@
   });
 
   // =====================================================
-  //                     RENDER DOS CARDS
+  // RENDER DOS CARDS
   // =====================================================
   function renderCards(list) {
     if (!$grid) return;
@@ -183,11 +195,11 @@
     let data = list;
 
     if (state.estoqueFiltro !== 'todos') {
-      data = list.filter(p => estoqueNivel(p.estoqueAtual) === state.estoqueFiltro);
+      data = data.filter(p => estoqueNivel(p.estoqueAtual) === state.estoqueFiltro);
     }
 
     const cards = data.map(p => {
-      const tipo = p.tipo || '-';
+      const tipo = tipoLabel(p.tipo);
       const preco = formatMoney(p.preco);
       const estoqueTxt = `${p.estoqueAtual ?? 0} unidades`;
 
@@ -223,15 +235,12 @@
               </div>
 
               <div class="produto-actions">
-                <button class="btn btn-sm btn-outline-primary btn-view" data-id="${p.id}">
-                  <i class="bi bi-eye"></i>
-                </button>
                 <button class="btn btn-sm btn-outline-secondary btn-edit" data-id="${p.id}">
                   <i class="bi bi-pencil"></i>
                 </button>
                 <button class="btn btn-sm btn-outline-danger btn-delete"
-                    data-id="${p.id}"
-                    data-nome="${p.nome}">
+                        data-id="${p.id}"
+                        data-nome="${p.nome}">
                   <i class="bi bi-trash"></i>
                 </button>
               </div>
@@ -250,9 +259,8 @@
     `;
   }
 
-
   // =====================================================
-  //                   PAGINAÇÃO / RESUMO
+  // PAGINAÇÃO / RESUMO
   // =====================================================
   function renderResumo(page, perPage, total) {
     if (!$resumo) return;
@@ -292,13 +300,24 @@
     $pagination.innerHTML = items.join('');
   }
 
+  // paginação click
+  $pagination?.addEventListener('click', (ev) => {
+    const a = ev.target.closest('a.page-link');
+    if (!a) return;
+    ev.preventDefault();
+    const p = Number(a.dataset.page);
+    if (!Number.isFinite(p) || p < 1 || p > state.totalPages) return;
+    state.page = p;
+    loadProdutos();
+  });
+
   // =====================================================
-  //                   CARREGAMENTO
+  // CARREGAMENTO
   // =====================================================
   async function loadProdutos() {
     const params = new URLSearchParams();
     if (state.geral) params.set('geral', state.geral);
-    if (state.tipo !== 'todos') params.set('tipo', state.tipo);
+    if (state.tipo && state.tipo !== 'todos') params.set('tipo', state.tipo);
 
     params.set('page', state.page);
     params.set('perPage', state.perPage);
@@ -314,19 +333,35 @@
   }
 
   // =====================================================
-  //               FORMULÁRIO / CRIAÇÃO
+  // FORMULÁRIO / CRIAÇÃO / EDIÇÃO
   // =====================================================
   function montarFormData() {
     const fd = new FormData();
 
-    const tipoTexto = document.getElementById('categoriaProduto').selectedOptions[0]
-      ? document.getElementById('categoriaProduto').selectedOptions[0].textContent.trim()
-      : '';
+    // categoria do MODAL
+    let tipoValue = '';
+    if ($categoria) {
+      // se estiver com value="AGUA|GALAO|ACESSORIO"
+      if ($categoria.value) {
+        tipoValue = $categoria.value;
+      } else {
+        // fallback por texto
+        const opt = $categoria.selectedOptions?.[0];
+        if (opt) {
+          const texto = opt.textContent.trim().toUpperCase();
+          if (texto.includes('ÁGUA')) tipoValue = 'AGUA';
+          else if (texto.includes('GALÃO') || texto.includes('GALAO')) tipoValue = 'GALAO';
+          else if (texto.includes('ACESSÓRIO') || texto.includes('ACESSORIO')) tipoValue = 'ACESSORIO';
+        }
+      }
+    }
 
-    fd.append('nome', (document.getElementById('nomeProduto').value || '').trim());
-    if (tipoTexto) fd.append('tipo', tipoTexto);
-    fd.append('preco', String(document.getElementById('precoProduto').value || '0'));
-    fd.append('estoqueAtual', String(document.getElementById('estoqueProduto').value || '0'));
+    fd.append('nome', ($nome?.value || '').trim());
+    if (tipoValue) {
+      fd.append('tipo', tipoValue); // vai como "AGUA" | "GALAO" | "ACESSORIO"
+    }
+    fd.append('preco', String($preco?.value || '0'));
+    fd.append('estoqueAtual', String($estoque?.value || '0'));
 
     const file = $imgInput?.files?.[0];
     if (file) fd.append('imagem', file);
@@ -337,7 +372,7 @@
   }
 
   // =====================================================
-  //                    EVENTOS DE FILTRO
+  // EVENTOS DE FILTRO
   // =====================================================
   $search?.addEventListener('input', () => {
     state.geral = $search.value.trim();
@@ -346,8 +381,22 @@
   });
 
   $filterCategoria?.addEventListener('change', () => {
-    state.tipo = ($filterCategoria.selectedOptions[0]?.textContent || 'todos').trim();
-    if ($filterCategoria.value === 'todos') state.tipo = 'todos';
+    // ideal: value="todos" | "AGUA" | "GALAO" | "ACESSORIO"
+    const val = ($filterCategoria.value || '').toUpperCase();
+    if (!val || val === 'TODOS') {
+      state.tipo = 'todos';
+    } else if (['AGUA', 'GALAO', 'ACESSORIO'].includes(val)) {
+      state.tipo = val;
+    } else {
+      // fallback por texto do option se value vier vazio
+      const opt = $filterCategoria.selectedOptions?.[0];
+      const texto = opt?.textContent.trim().toUpperCase() || '';
+      if (texto.includes('ÁGUA')) state.tipo = 'AGUA';
+      else if (texto.includes('GALÃO') || texto.includes('GALAO')) state.tipo = 'GALAO';
+      else if (texto.includes('ACESSÓRIO') || texto.includes('ACESSORIO')) state.tipo = 'ACESSORIO';
+      else state.tipo = 'todos';
+    }
+
     state.page = 1;
     loadProdutos();
   });
@@ -359,24 +408,33 @@
   });
 
   // =====================================================
-  //                    ADICIONAR PRODUTO
+  // ADICIONAR PRODUTO
   // =====================================================
   $btnAdd?.addEventListener('click', () => {
+    if (!$produtoForm) return;
+
     $produtoForm.reset();
-    $produtoModalLabel.textContent = 'Adicionar Produto';
+    if ($produtoModalLabel) $produtoModalLabel.textContent = 'Adicionar Produto';
     state.currentEditId = null;
-    $preview.classList.add('d-none');
-    produtoModal.show();
+
+    $preview?.classList.add('d-none');
+    $wrapRemover?.classList.add('d-none');
+    if ($remover) $remover.checked = false;
+    if ($imgInput) $imgInput.value = '';
+
+    if ($categoria) $categoria.value = '';
+
+    produtoModal?.show();
   });
 
   // =====================================================
-  //                 SALVAR (CRIAR / EDITAR)
+  // SALVAR (CRIAR / EDITAR)
   // =====================================================
   $btnSalvar?.addEventListener('click', async () => {
     try {
-      if (!$produtoForm.checkValidity()) { 
-        $produtoForm.reportValidity(); 
-        return; 
+      if (!$produtoForm.checkValidity()) {
+        $produtoForm.reportValidity();
+        return;
       }
 
       const fd = montarFormData();
@@ -387,20 +445,20 @@
         await api('POST', `/api/produtos`, fd, true);
       }
 
-      produtoModal.hide();
+      produtoModal?.hide();
       await loadProdutos();
 
     } catch (e) {
       safeAlert({
         icon: "error",
         title: "Erro",
-        text: e.message || 'Erro ao salvar produto.'
+        text: e.message || 'Erro ao salvar produto.',
       });
     }
   });
 
   // =====================================================
-  //                     VIEW / EDITAR
+  // GRID: EDITAR / DELETE
   // =====================================================
   $grid?.addEventListener('click', (ev) => {
     const btn = ev.target.closest('button');
@@ -408,44 +466,44 @@
 
     const id = btn.getAttribute('data-id');
 
-    if (btn.classList.contains('btn-view')) abrirView(id);
-    if (btn.classList.contains('btn-edit')) abrirEditar(id);
+    if (btn.classList.contains('btn-edit')) {
+      abrirEditar(id);
+      return;
+    }
+
     if (btn.classList.contains('btn-delete')) {
       const nome = btn.getAttribute('data-nome');
       abrirDelete(id, nome);
+      return;
     }
   });
-
-  async function abrirView(id) {
-    const res = await api('GET', `/api/produtos/${id}`);
-    const p = res?.dados || res;
-
-    $viewNome.textContent = p.nome || '';
-    $viewCategoria.textContent = p.tipo || '-';
-    $viewPreco.textContent = formatMoney(p.preco);
-    $viewEstoque.textContent = `${p.estoqueAtual ?? 0} unidades`;
-
-    $viewEstoqueBadge.outerHTML = estoqueBadgeHtml(p.estoqueAtual);
-
-    state.currentViewId = p.id;
-    viewModal.show();
-  }
 
   async function abrirEditar(id) {
     const res = await api('GET', `/api/produtos/${id}`);
     const p = res?.dados || res;
 
-    $produtoModalLabel.textContent = 'Editar Produto';
+    if ($produtoModalLabel) $produtoModalLabel.textContent = 'Editar Produto';
     state.currentEditId = p.id;
 
-    $nome.value = p.nome || '';
-    $preco.value = p.preco || '';
-    $estoque.value = p.estoqueAtual ?? 0;
+    if ($nome) $nome.value = p.nome || '';
+    if ($preco) $preco.value = p.preco || '';
+    if ($estoque) $estoque.value = p.estoqueAtual ?? 0;
 
-    for (const opt of $categoria.options) {
-      if (opt.textContent.trim() === (p.tipo || '').trim()) {
-        $categoria.value = opt.value;
-        break;
+    // seta categoria no modal
+    if ($categoria) {
+      const tipo = (p.tipo || '').toUpperCase();
+      let setado = false;
+
+      for (const opt of $categoria.options) {
+        if (opt.value && opt.value.toUpperCase() === tipo) {
+          $categoria.value = opt.value;
+          setado = true;
+          break;
+        }
+      }
+
+      if (!setado) {
+        $categoria.value = '';
       }
     }
 
@@ -453,25 +511,29 @@
       const imgUrl = p.imageUrl.startsWith('http')
         ? p.imageUrl
         : `${API_BASE}${p.imageUrl}`;
-      $preview.src = imgUrl;
-      $preview.classList.remove('d-none');
-      $wrapRemover.classList.remove('d-none');
+      if ($preview) {
+        $preview.src = imgUrl;
+        $preview.classList.remove('d-none');
+      }
+      $wrapRemover?.classList.remove('d-none');
     } else {
-      $preview.classList.add('d-none');
-      $wrapRemover.classList.add('d-none');
+      $preview?.classList.add('d-none');
+      $wrapRemover?.classList.add('d-none');
     }
 
     if ($imgInput) $imgInput.value = '';
-    produtoModal.show();
+    if ($remover) $remover.checked = false;
+
+    produtoModal?.show();
   }
 
   // =====================================================
-  //                       DELETE
+  // DELETE
   // =====================================================
   function abrirDelete(id, nome) {
     state.currentDeleteId = id;
-    $deleteNome.textContent = nome;
-    deleteModal.show();
+    if ($deleteNome) $deleteNome.textContent = nome;
+    deleteModal?.show();
   }
 
   $btnConfirmarExclusao?.addEventListener('click', async () => {
@@ -479,19 +541,19 @@
 
     try {
       await api('DELETE', `/api/produtos/${state.currentDeleteId}`);
-      deleteModal.hide();
+      deleteModal?.hide();
       await loadProdutos();
     } catch (e) {
       safeAlert({
         icon: "error",
         title: "Erro ao excluir",
-        text: e.message
+        text: e.message,
       });
     }
   });
 
   // =====================================================
-  //                   INICIALIZAÇÃO
+  // INICIALIZAÇÃO
   // =====================================================
   document.addEventListener('DOMContentLoaded', () => {
     loadProdutos();

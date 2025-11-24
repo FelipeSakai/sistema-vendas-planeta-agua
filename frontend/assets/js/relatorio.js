@@ -42,9 +42,12 @@
 
     function toPTDate(iso) {
         if (!iso) return "—";
-        const d = new Date(iso);
-        if (Number.isNaN(+d)) return "—";
-        return d.toLocaleDateString("pt-BR");
+        try {
+            const [yyyy, mm, dd] = iso.split("T")[0].split("-");
+            return `${dd}/${mm}/${yyyy}`;
+        } catch {
+            return "—";
+        }
     }
 
     function getMonthName(m) {

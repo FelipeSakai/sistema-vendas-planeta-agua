@@ -62,11 +62,11 @@
             </div>
             <div class="col-md-3">
               <!-- usamos o TEXTO da opção como 'tipo' -->
-              <select class="form-select" id="filterCategoria">
-                <option value="todos" selected>Todas as categorias</option>
-                <option value="agua">Água Mineral</option>
-                <option value="galao">Galão</option>
-                <option value="acessorios">Acessório</option>
+              <select class="form-select" id="categoriaProduto">
+                <option value="" disabled selected>Selecione</option>
+                <option value="AGUA">Água Mineral</option>
+                <option value="GALAO">Galão</option>
+                <option value="ACESSORIO">Acessório</option>
               </select>
             </div>
             <div class="col-md-3">
@@ -97,7 +97,7 @@
     </div>
   </div>
 
-  <!-- Modal Adicionar/Editar Produto (somente campos que existem no backend) -->
+  <!-- Modal Adicionar/Editar Produto -->
   <div class="modal fade" id="produtoModal" tabindex="-1" aria-labelledby="produtoModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
@@ -112,11 +112,13 @@
                 <label for="nomeProduto" class="form-label">Nome do Produto</label>
                 <input type="text" class="form-control" id="nomeProduto" required>
               </div>
+
               <div class="mb-3">
                 <label for="imagemProduto" class="form-label">Imagem do Produto</label>
                 <input type="file" class="form-control" id="imagemProduto" accept="image/*">
                 <div class="form-text">PNG, JPG, WEBP até 5MB</div>
               </div>
+
               <div class="mb-3">
                 <img id="previewImagem" class="img-thumbnail d-none" style="max-height:150px" alt="Pré-visualização" />
                 <div class="form-check mt-2 d-none" id="wrapRemoverImg">
@@ -124,13 +126,14 @@
                   <label class="form-check-label" for="removerImagem">Remover imagem</label>
                 </div>
               </div>
+
               <div class="col-md-4">
-                <label for="categoriaProduto" class="form-label">Categoria</label>
-                <select class="form-select" id="categoriaProduto">
+                <label for="categoriaProdutoModal" class="form-label">Categoria</label>
+                <select class="form-select" id="categoriaProdutoModal">
                   <option value="" selected disabled>Selecione</option>
-                  <option>Água Mineral</option>
-                  <option>Galão</option>
-                  <option>Acessório</option>
+                  <option value="AGUA">Água Mineral</option>
+                  <option value="GALAO">Galão</option>
+                  <option value="ACESSORIO">Acessório</option>
                 </select>
               </div>
             </div>
@@ -145,6 +148,7 @@
                 <input type="number" class="form-control" id="estoqueProduto" min="0" value="0">
               </div>
             </div>
+
           </form>
         </div>
         <div class="modal-footer">
@@ -154,6 +158,7 @@
       </div>
     </div>
   </div>
+
 
   <!-- Modal Visualizar Produto (placeholders apenas) -->
   <div class="modal fade" id="viewProdutoModal" tabindex="-1" aria-labelledby="viewProdutoModalLabel"

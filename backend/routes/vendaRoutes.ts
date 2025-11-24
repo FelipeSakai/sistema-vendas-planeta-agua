@@ -20,6 +20,10 @@ router.delete("/vendas/:id/itens/:itemId", auth([Cargo.ADMIN, Cargo.FUNCIONARIO]
 // Pagamento
 router.patch("/vendas/:id/pagamento", auth([Cargo.ADMIN, Cargo.FUNCIONARIO]), asyncHandler(vendaController.confirmarPagamento));
 
+
+router.patch("/vendas/:id", auth([Cargo.ADMIN, Cargo.FUNCIONARIO]), asyncHandler(vendaController.atualizarVenda));
+
+
 // Entrega
 router.put("/vendas/:id/entrega", auth([Cargo.ADMIN, Cargo.MOTORISTA]), asyncHandler(vendaController.upsertEntrega));
 router.patch("/vendas/:id/entrega/confirmar", auth([Cargo.ADMIN, Cargo.MOTORISTA]), asyncHandler(vendaController.confirmarEntrega));

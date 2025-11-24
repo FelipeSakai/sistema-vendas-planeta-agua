@@ -2,9 +2,19 @@ import { PrismaClient, StatusVenda } from "@prisma/client";
 const prisma = new PrismaClient();
 
 function dayBounds(iso?: string) {
-    const d = iso ? new Date(iso) : new Date();
+    let d: Date;
+
+    if (iso) {
+        // Faz o parse manual para evitar UTC
+        const [ano, mes, dia] = iso.split("-").map(Number);
+        d = new Date(ano, mes - 1, dia, 0, 0, 0); // LOCAL (sem UTC)
+    } else {
+        d = new Date();
+    }
+
     const start = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0);
-    const end = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+    const end   = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+
     return { start, end };
 }
 function monthBounds(ano: number, mesIndex1: number) {

@@ -33,10 +33,15 @@
   }
 
   const toCents = (v) =>
-    Math.round(Number(String(v).replace(/[^\d,.-]/g, "").replace(",", ".")) * 100) || 0;
+    Math.round(
+      Number(String(v).replace(/[^\d,.-]/g, "").replace(",", ".")) * 100
+    ) || 0;
   const fromCents = (v) => (v || 0) / 100;
   const formatBRL = (v) =>
-    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(fromCents(v));
+    new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(fromCents(v));
 
   // =========================
   // DOM refs principais
@@ -46,6 +51,7 @@
   const quantidadeProduto = document.getElementById("quantidadeProduto");
   const precoProduto = document.getElementById("precoProduto");
   const subtotalProduto = document.getElementById("subtotalProduto");
+  const validadeProduto = document.getElementById("validadeProduto");
   const btnAdicionarProduto = document.getElementById("btnAdicionarProduto");
   const listaProdutos = document.getElementById("listaProdutos");
   const subtotalVenda = document.getElementById("subtotalVenda");
@@ -61,6 +67,11 @@
   let clienteSelecionado = null;
   let debounce = null;
 
+  // controle de edição
+  const params = new URLSearchParams(window.location.search);
+  const vendaEditId = params.get("id");
+  let originalItemIds = []; // ids dos vendaItem originais (pra saber quais remover)
+
   // =========================
   // Inicialização
   // =========================
@@ -72,12 +83,35 @@
     configurarModalCliente();
     atualizarListaProdutos();
     atualizarTotais();
+
+    if (validadeProduto) {
+      validadeProduto.value = "";
+      validadeProduto.disabled = true;
+      validadeProduto.placeholder = "Somente para Galão";
+    }
+
+    // se for edição, carrega a venda
+    if (vendaEditId) {
+      try {
+        const venda = await api("GET", `/api/vendas/${vendaEditId}`);
+        preencherVendaParaEdicao(venda);
+      } catch (e) {
+        console.error("Erro ao carregar venda:", e);
+        Swal.fire(
+          "Erro",
+          "Não foi possível carregar a venda para edição.",
+          "error"
+        );
+      }
+    }
   });
 
   // =========================
   // MODAL DE CLIENTE
   // =========================
-  const modalCliente = new bootstrap.Modal(document.getElementById("modalSelecionarCliente"));
+  const modalCliente = new bootstrap.Modal(
+    document.getElementById("modalSelecionarCliente")
+  );
   const btnSelecionarCliente = document.getElementById("btnSelecionarCliente");
   const btnAlterarCliente = document.getElementById("btnAlterarCliente");
   const divSemCliente = document.getElementById("semClienteSelecionado");
@@ -112,7 +146,10 @@
     }
 
     try {
-      const dados = await api("GET", `/api/clientes?geral=${encodeURIComponent(termo)}&perPage=50`);
+      const dados = await api(
+        "GET",
+        `/api/clientes?geral=${encodeURIComponent(termo)}&perPage=50`
+      );
       const lista = dados?.data || dados || [];
       if (!lista.length) {
         listaClientesModal.innerHTML =
@@ -150,12 +187,15 @@
       Swal.fire("Erro", "Falha ao buscar clientes.", "error");
     }
   }
+
   function maskPhone(value) {
     const digits = value.replace(/\D/g, "").slice(0, 11);
     if (digits.length <= 2) return `(${digits}`;
     if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
     if (digits.length <= 10)
-      return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+      return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(
+        6
+      )}`;
     return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
   }
 
@@ -168,7 +208,6 @@
           e.target.value = maskPhone(e.target.value);
         });
       },
-
       title: "Cadastrar Novo Cliente",
       html: `
         <input id="swal-nome" class="swal2-input" placeholder="Nome completo">
@@ -238,6 +277,7 @@
       catalogoProdutos = [];
     }
   }
+
   // =========================
   // Motoristas
   // =========================
@@ -246,12 +286,15 @@
     if (!selectMotorista) return;
 
     try {
-      const dados = await api("GET", "/api/usuarios?cargo=MOTORISTA&perPage=100");
+      const dados = await api(
+        "GET",
+        "/api/usuarios?cargo=MOTORISTA&perPage=100"
+      );
       const motoristas = dados?.data || dados || [];
 
       selectMotorista.innerHTML = `
       <option value="" selected disabled>Selecione o motorista</option>
-      ${motoristas.map(m => `<option value="${m.id}">${m.nome}</option>`).join("")}
+      ${motoristas.map((m) => `<option value="${m.id}">${m.nome}</option>`).join("")}
     `;
     } catch (e) {
       console.error("Erro ao carregar motoristas:", e);
@@ -259,6 +302,9 @@
     }
   }
 
+  // =========================
+  // Autocomplete de produtos
+  // =========================
   function configurarAutocomplete() {
     inputProduto.addEventListener("focus", () => {
       renderSugestoes(catalogoProdutos);
@@ -270,7 +316,9 @@
       debounce = setTimeout(() => {
         const termo = inputProduto.value.trim().toLowerCase();
         const filtrados = termo
-          ? catalogoProdutos.filter((p) => p.nome.toLowerCase().includes(termo))
+          ? catalogoProdutos.filter((p) =>
+            p.nome.toLowerCase().includes(termo)
+          )
           : catalogoProdutos;
         renderSugestoes(filtrados);
       }, 150);
@@ -320,11 +368,38 @@
   }
 
   function escolherProduto(item) {
+    const produtoId = item.dataset.id;
+    const produto = catalogoProdutos.find(
+      (p) => String(p.id) === String(produtoId)
+    );
+    const isGalao = produto?.tipo === "GALAO";
+
     inputProduto.value = item.querySelector("span").textContent;
-    inputProduto.dataset.produtoId = item.dataset.id;
+    inputProduto.dataset.produtoId = produtoId;
     precoProduto.value = Number(item.dataset.preco || 0).toFixed(2);
+
+    if (isGalao) {
+      // Galão → sempre 1 por vez, validade obrigatória
+      quantidadeProduto.value = "1";
+      quantidadeProduto.setAttribute("disabled", "disabled");
+
+      if (validadeProduto) {
+        validadeProduto.disabled = false;
+        validadeProduto.placeholder = "Informe o ano (obrigatório)";
+      }
+    } else {
+      // Outros produtos → quantidade livre, sem validade
+      quantidadeProduto.removeAttribute("disabled");
+      if (validadeProduto) {
+        validadeProduto.value = "";
+        validadeProduto.disabled = true;
+        validadeProduto.placeholder = "Somente para Galão";
+      }
+    }
+
     if (!quantidadeProduto.value || Number(quantidadeProduto.value) <= 0)
       quantidadeProduto.value = "1";
+
     atualizarSubtotalProduto();
     sugestoesProduto.style.display = "none";
   }
@@ -351,10 +426,14 @@
       <td class="fw-semibold">${it.nome}</td>
       <td class="text-end">${formatBRL(it.precoCents)}</td>
       <td class="text-center">${it.quantidade}</td>
-      <td class="text-center">${it.validade ? it.validade : "<span class='text-muted'>—</span>"}</td>
-      <td class="text-end fw-bold text-success">${formatBRL(it.subtotalCents)}</td>
+      <td class="text-center">${it.validade ? it.validade : "<span class='text-muted'>—</span>"
+        }</td>
+      <td class="text-end fw-bold text-success">${formatBRL(
+          it.subtotalCents
+        )}</td>
       <td class="text-center">
-        <button class="btn btn-sm btn-outline-danger btn-remover" data-id="${it.id}" title="Remover produto">
+        <button class="btn btn-sm btn-outline-danger btn-remover" data-id="${it._cartId
+        }" title="Remover produto">
           <i class="bi bi-trash"></i>
         </button>
       </td>
@@ -366,13 +445,12 @@
     // evento de remover produto
     listaProdutos.querySelectorAll(".btn-remover").forEach((btn) => {
       btn.addEventListener("click", () => {
-        carrinho = carrinho.filter((x) => x.id !== btn.dataset.id);
+        carrinho = carrinho.filter((x) => x._cartId !== btn.dataset.id);
         atualizarListaProdutos();
         atualizarTotais();
       });
     });
   }
-
 
   function atualizarTotais() {
     const subtotal = carrinho.reduce((a, b) => a + b.subtotalCents, 0);
@@ -393,30 +471,73 @@
 
     btnAdicionarProduto.addEventListener("click", () => {
       const id = inputProduto.dataset.produtoId;
-      const validadeAno = document.getElementById("validadeProduto").value.trim();
-      if (!id) return Swal.fire("Atenção", "Selecione um produto.", "warning");
+      const validadeAno = (validadeProduto?.value || "").trim();
+      if (!id)
+        return Swal.fire("Atenção", "Selecione um produto.", "warning");
 
-      const qtd = Number(quantidadeProduto.value || 0);
-      if (!qtd) return Swal.fire("Atenção", "Informe uma quantidade.", "warning");
+      const produto = catalogoProdutos.find(
+        (p) => String(p.id) === String(id)
+      );
+      const isGalao = produto?.tipo === "GALAO";
+
+      // Galão → 1 por vez, validade obrigatória
+      if (isGalao && !validadeAno) {
+        return Swal.fire(
+          "Atenção",
+          "Informe o ano de validade do galão.",
+          "warning"
+        );
+      }
+
+      let qtd = Number(quantidadeProduto.value || 0);
+      if (!qtd)
+        return Swal.fire("Atenção", "Informe uma quantidade.", "warning");
 
       const precoCents = toCents(precoProduto.value);
-      const nome =
-        catalogoProdutos.find((p) => String(p.id) === String(id))?.nome ||
-        inputProduto.value;
+      const nome = produto?.nome || inputProduto.value || "Produto";
 
-      const existente = carrinho.find((x) => x.id === id);
-      if (existente) {
-        existente.quantidade += qtd;
-        existente.subtotalCents = existente.quantidade * existente.precoCents;
-      } else {
+      if (isGalao) {
+        // cada galão vira uma linha separada
+        qtd = 1;
         carrinho.push({
-          id,
+          _cartId: `${id}_${Date.now()}_${Math.random()
+            .toString(16)
+            .slice(2)}`,
+          _itemId: null, // ainda não tem no banco
+          produtoId: id,
           nome,
           precoCents,
-          quantidade: qtd,
-          subtotalCents: qtd * precoCents,
-          validade: validadeAno || null
+          quantidade: 1,
+          subtotalCents: precoCents,
+          validade: validadeAno,
+          _isGalao: true,
         });
+      } else {
+        // produtos normais → podem somar na mesma linha
+        const existente = carrinho.find(
+          (x) =>
+            String(x.produtoId) === String(id) &&
+            !x._isGalao && // só agrupa não-galão
+            !x._itemId === false // tanto faz ser novo ou velho
+        );
+        if (existente) {
+          existente.quantidade += qtd;
+          existente.subtotalCents = existente.quantidade * existente.precoCents;
+        } else {
+          carrinho.push({
+            _cartId: `${id}_${Date.now()}_${Math.random()
+              .toString(16)
+              .slice(2)}`,
+            _itemId: null,
+            produtoId: id,
+            nome,
+            precoCents,
+            quantidade: qtd,
+            subtotalCents: qtd * precoCents,
+            validade: null,
+            _isGalao: false,
+          });
+        }
       }
 
       atualizarListaProdutos();
@@ -435,30 +556,48 @@
       precoProduto.value = "";
       quantidadeProduto.value = "1";
       subtotalProduto.value = "";
+      if (validadeProduto) {
+        validadeProduto.value = "";
+        validadeProduto.disabled = true;
+        validadeProduto.placeholder = "Somente para Galão";
+      }
+      quantidadeProduto.removeAttribute("disabled");
     });
   }
+
   // =========================
-  // Finalizar Venda
+  // Finalizar Venda (criação)
   // =========================
   const btnFinalizarVenda = document.getElementById("btnFinalizarVenda");
 
-  if (btnFinalizarVenda) {
+  if (btnFinalizarVenda && !vendaEditId) {
+    // MODO CRIAÇÃO
     btnFinalizarVenda.addEventListener("click", async () => {
       if (!clienteSelecionado) {
-        return Swal.fire("Atenção", "Selecione um cliente antes de finalizar.", "info");
+        return Swal.fire(
+          "Atenção",
+          "Selecione um cliente antes de finalizar.",
+          "info"
+        );
       }
       if (!carrinho.length) {
-        return Swal.fire("Atenção", "Adicione produtos à venda antes de finalizar.", "info");
+        return Swal.fire(
+          "Atenção",
+          "Adicione produtos à venda antes de finalizar.",
+          "info"
+        );
       }
 
-      const motoristaId = document.getElementById("motoristaVenda")?.value || null;
+      const motoristaId =
+        document.getElementById("motoristaVenda")?.value || null;
 
       const payload = {
         clienteId: clienteSelecionado.id,
         usuarioId: JSON.parse(localStorage.getItem("user") || "{}").id,
-        motoristaId: motoristaId ? Number(motoristaId) : null, // ✅ ADICIONADO
+        motoristaId: motoristaId ? Number(motoristaId) : null,
+        dataEntregaPrevista: document.getElementById("dataEntrega")?.value || null,
         itens: carrinho.map((it) => ({
-          produtoId: Number(it.id),
+          produtoId: Number(it.produtoId),
           quantidade: it.quantidade,
           precoUnitario: fromCents(it.precoCents),
           validade: it.validade ? `${it.validade}-12-31` : null,
@@ -467,14 +606,27 @@
         desconto: Number(descontoVenda.value || 0),
       };
 
+
       try {
         const venda = await api("POST", "/api/vendas", payload);
+
+        const motoristaIdSelecionado =
+          document.getElementById("motoristaVenda")?.value || null;
+        const dataPrevistaInput =
+          document.getElementById("dataEntrega")?.value || null;
+
+        if (motoristaIdSelecionado || dataPrevistaInput) {
+          await api("PUT", `/api/vendas/${venda.id}/entrega`, {
+            motoristaId: motoristaIdSelecionado ? Number(motoristaIdSelecionado) : null,
+            dataPrevista: dataPrevistaInput || null,
+          });
+        }
         Swal.fire({
           icon: "success",
           title: "Venda concluída com sucesso!",
           html: `
-    <p>Venda nº <strong>${venda.id}</strong> registrada para <strong>${clienteSelecionado.nome}</strong>.</p>
-  `,
+            <p>Venda nº <strong>${venda.id}</strong> registrada para <strong>${clienteSelecionado.nome}</strong>.</p>
+          `,
           timer: 2000,
           showConfirmButton: false,
         });
@@ -495,75 +647,64 @@
   //   MODO DE EDIÇÃO DE VENDA
   // ======================================================
 
-  // 1) Detectar se existe ?id= na URL
-  const params = new URLSearchParams(window.location.search);
-  const vendaEditId = params.get("id");
-
-  // 2) Se tiver ID → carregar venda
-  if (vendaEditId) {
-    document.addEventListener("DOMContentLoaded", async () => {
-      try {
-        const venda = await api("GET", `/api/vendas/${vendaEditId}`);
-        preencherVendaParaEdicao(venda);
-      } catch (e) {
-        console.error("Erro ao carregar venda:", e);
-        Swal.fire("Erro", "Não foi possível carregar a venda para edição.", "error");
-      }
-    });
-  }
-
-  // FUNÇÃO PRINCIPAL DE POPULAR A TELA
   function preencherVendaParaEdicao(v) {
-    // --------------------------
     // CLIENTE
-    // --------------------------
     clienteSelecionado = v.cliente;
     renderClienteSelecionado();
 
-    // --------------------------
     // PAGAMENTO
-    // --------------------------
-    document.getElementById("formaPagamento").value = v.formaPagamento || "DINHEIRO";
+    document.getElementById("formaPagamento").value =
+      v.formaPagamento || "DINHEIRO";
     document.getElementById("descontoVenda").value = Number(v.desconto || 0);
 
-    // --------------------------
     // OBSERVAÇÃO
-    // --------------------------
     document.getElementById("observacoesVenda").value = v.observacao || "";
 
-    // --------------------------
     // ENTREGA
-    // --------------------------
     if (v.entrega) {
-      const mot = document.getElementById("motoristaVenda");
-      if (v.entrega.motoristaId) mot.value = String(v.entrega.motoristaId);
+      const selectMotorista = document.getElementById("motoristaVenda");
+      if (selectMotorista && v.entrega.motoristaId) {
+        selectMotorista.value = String(v.entrega.motoristaId);
+      }
 
       if (v.entrega.dataPrevista) {
-        document.getElementById("dataEntrega").value = v.entrega.dataPrevista.substring(0, 10);
+        document.getElementById("dataEntrega").value =
+          v.entrega.dataPrevista.substring(0, 10);
       }
+    } else {
+      const selectMotorista = document.getElementById("motoristaVenda");
+      if (selectMotorista) selectMotorista.value = "";
+      const inputData = document.getElementById("dataEntrega");
+      if (inputData) inputData.value = "";
     }
 
-    // --------------------------
+
     // RECRIAR CARRINHO
-    // --------------------------
-    carrinho = v.itens.map(it => ({
-      id: it.produtoId,
+    originalItemIds = v.itens.map((it) => it.id);
+
+    carrinho = v.itens.map((it) => ({
+      _cartId: `${it.id}_${Math.random().toString(16).slice(2)}`,
+      _itemId: it.id, // <- ID REAL DO VENDA_ITEM
+      produtoId: it.produtoId,
       nome: it.produto?.nome || "Produto",
       precoCents: Math.round(Number(it.precoUnitario) * 100),
       quantidade: it.quantidade,
       subtotalCents: Math.round(Number(it.subtotal) * 100),
-      validade: it.validade ? String(it.validade).substring(0, 4) : null
+      validade: it.validade ? String(it.validade).substring(0, 4) : null,
+      _isGalao: it.produto?.tipo === "GALAO",
     }));
 
     atualizarListaProdutos();
     atualizarTotais();
 
-    // --------------------------
     // Botão vira "Salvar Alterações"
-    // --------------------------
-    btnFinalizarVenda.innerHTML = `<i class="bi bi-save me-2"></i> Salvar Alterações`;
-    btnFinalizarVenda.onclick = salvarEdicaoDaVenda;
+    if (btnFinalizarVenda) {
+      btnFinalizarVenda.innerHTML =
+        '<i class="bi bi-save me-2"></i> Salvar Alterações';
+      btnFinalizarVenda.onclick = salvarEdicaoDaVenda;
+    }
   }
+
   // ======================================================
   // FUNÇÃO PARA SALVAR ALTERAÇÕES
   // ======================================================
@@ -577,34 +718,76 @@
         return Swal.fire("Atenção", "Adicione produtos.", "info");
       }
 
-      // Atualiza itens um por um
+      const idsMantidos = [];
+
+      // 1) Atualizar / criar itens
       for (const it of carrinho) {
-        await api("PUT", `/api/vendas/${vendaEditId}/itens/${it.id}`, {
+        const payloadItem = {
           quantidade: it.quantidade,
           precoUnitario: fromCents(it.precoCents),
-          validade: it.validade ? `${it.validade}-12-31` : null
-        });
+          validade: it.validade ? `${it.validade}-12-31` : null,
+          // se você quiser permitir observação por item, dá pra colocar aqui
+        };
+
+        if (it._itemId) {
+          // item já existe → PUT
+          idsMantidos.push(it._itemId);
+          await api(
+            "PUT",
+            `/api/vendas/${vendaEditId}/itens/${it._itemId}`,
+            payloadItem
+          );
+        } else {
+          // item novo → POST
+          await api("POST", `/api/vendas/${vendaEditId}/itens`, {
+            ...payloadItem,
+            produtoId: Number(it.produtoId),
+          });
+        }
       }
 
-      // Atualizar forma de pagamento e desconto
-      await api("PATCH", `/api/vendas/${vendaEditId}/pagamento`, {
+      // 2) Remover itens que existiam e foram tirados do carrinho
+      const idsParaRemover = originalItemIds.filter(
+        (id) => !idsMantidos.includes(id)
+      );
+      for (const id of idsParaRemover) {
+        await api("DELETE", `/api/vendas/${vendaEditId}/itens/${id}`);
+      }
+
+      // 3) Atualizar cabeçalho da venda (forma de pagamento, desconto, observação...)
+      await api("PATCH", `/api/vendas/${vendaEditId}`, {
         formaPagamento: document.getElementById("formaPagamento").value,
-        desconto: Number(descontoVenda.value)
+        desconto: Number(descontoVenda.value || 0),
+        observacao: document.getElementById("observacoesVenda").value || null,
+        motoristaId: Number(document.getElementById("motoristaVenda").value) || null,
+        dataEntregaPrevista:
+          document.getElementById("dataEntrega")?.value || null,
       });
+
+      const motoristaIdSelecionado =
+        document.getElementById("motoristaVenda")?.value || null;
+      const dataPrevistaInput =
+        document.getElementById("dataEntrega")?.value || null;
+
+      if (motoristaIdSelecionado || dataPrevistaInput) {
+        await api("PUT", `/api/vendas/${vendaEditId}/entrega`, {
+          motoristaId: motoristaIdSelecionado ? Number(motoristaIdSelecionado) : null,
+          dataPrevista: dataPrevistaInput || null,
+        });
+      }
 
       Swal.fire({
         icon: "success",
         title: "Venda atualizada com sucesso!",
         timer: 1600,
-        showConfirmButton: false
+        showConfirmButton: false,
       }).then(() => {
         window.location.href = "vendas.html";
       });
-
     } catch (e) {
       console.error(e);
       Swal.fire("Erro", e.message || "Falha ao salvar alterações.", "error");
     }
+    
   }
-
 })();

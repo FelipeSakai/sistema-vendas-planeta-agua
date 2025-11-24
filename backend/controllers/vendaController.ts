@@ -173,10 +173,13 @@ export async function buscarVendaPorId(req: Request, res: Response) {
 }
 
 export async function listarVendas(req: Request, res: Response) {
-    const { clienteId, status, dataInicio, dataFim, page, perPage } = req.query;
+    const { clienteId, clienteNome, motoristaId, status, dataInicio, dataFim, page, perPage } = req.query;
+
     try {
         const out = await vendaService.listarVendas({
             clienteId: clienteId ? Number(clienteId) : undefined,
+            clienteNome: clienteNome as string | undefined,
+            motoristaId: motoristaId ? Number(motoristaId) : undefined,
             status: status as StatusVenda | undefined,
             dataInicio: dataInicio as string | undefined,
             dataFim: dataFim as string | undefined,
@@ -225,3 +228,19 @@ export async function listarMotoristas(req: Request, res: Response) {
         });
     }
 }
+
+export async function atualizarVenda(req: Request, res: Response) {
+    const vendaId = Number(req.params.id);
+
+    try {
+        const out = await vendaService.atualizarVenda(vendaId, req.body);
+        return respostaSucesso(res, "Venda atualizada com sucesso", out.venda);
+    } catch (e: any) {
+        console.error("❌ Erro ao atualizar venda:", e);
+        return res.status(e.status || 500).json({
+            sucesso: false,
+            mensagem: e.message || "Erro ao atualizar venda",
+        });
+    }
+}
+

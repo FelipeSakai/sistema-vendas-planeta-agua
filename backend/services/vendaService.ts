@@ -29,6 +29,7 @@ type CriarVendaDTO = {
   status?: StatusVenda | string;
 };
 
+
 type AtualizarItemDTO = Partial<
   Pick<ItemInput, "quantidade" | "precoUnitario" | "validade" | "observacao">
 >;
@@ -310,13 +311,55 @@ export async function upsertEntrega(vendaId: number, data: any) {
   const venda = await prisma.venda.findUnique({ where: { id: vendaId } });
   if (!venda) throw new Error("Venda não encontrada.");
 
+  // normaliza datas
+  const fixDate = (d: any) => {
+    if (!d) return null;
+    if (d instanceof Date) return d;
+    const raw = String(d).trim();
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+      return new Date(raw + "T00:00:00");
+    }
+
+    const dt = new Date(raw);
+    return isNaN(dt.getTime()) ? null : dt;
+  };
+
+  const entregaData = data.entrega ? data.entrega : data;
+
+  const payload: any = {};
+
+  if ("motoristaId" in entregaData) {
+    payload.motoristaId = entregaData.motoristaId ? Number(entregaData.motoristaId) : null;
+  }
+
+  if ("dataPrevista" in entregaData) {
+    payload.dataPrevista = entregaData.dataPrevista
+      ? fixDate(entregaData.dataPrevista)
+      : null;
+  }
+
+  if ("dataEntrega" in entregaData) {
+    payload.dataEntrega = entregaData.dataEntrega
+      ? fixDate(entregaData.dataEntrega)
+      : null;
+  }
+
+  if ("status" in entregaData) {
+    payload.status = entregaData.status;
+  }
+
   const existe = await prisma.entrega.findUnique({ where: { vendaId } });
+
   const entrega = existe
-    ? await prisma.entrega.update({ where: { vendaId }, data })
-    : await prisma.entrega.create({ data: { vendaId, ...data } });
+    ? await prisma.entrega.update({ where: { vendaId }, data: payload })
+    : await prisma.entrega.create({ data: { vendaId, ...payload } });
 
   return { mensagem: "Entrega atualizada", entrega };
 }
+
+
+
 
 export async function confirmarEntrega(vendaId: number) {
   const venda = await prisma.venda.findUnique({
@@ -393,16 +436,32 @@ export async function buscarVendaPorId(vendaId: number) {
 
 type ListarFiltro = {
   clienteId?: number;
+  clienteNome?: string;
+  motoristaId?: number;
   status?: StatusVenda;
   dataInicio?: string | Date;
   dataFim?: string | Date;
   page?: number;
   perPage?: number;
 };
+
 export async function listarVendas(f: ListarFiltro = {}) {
   const where: Prisma.VendaWhereInput = {};
+
   if (f.clienteId) where.clienteId = f.clienteId;
+
+  if (f.clienteNome) {
+    where.cliente = {
+      nome: { contains: f.clienteNome, mode: "insensitive" },
+    };
+  }
+
+  if (f.motoristaId) {
+    where.entrega = { motoristaId: f.motoristaId };
+  }
+
   if (f.status) where.status = f.status;
+
   if (f.dataInicio || f.dataFim) {
     where.dataVenda = {
       gte: f.dataInicio ? new Date(f.dataInicio) : undefined,
@@ -421,12 +480,38 @@ export async function listarVendas(f: ListarFiltro = {}) {
       orderBy: { dataVenda: "desc" },
       skip,
       take,
-      include: { cliente: true, vendedor: true, entrega: true, itens: true },
+      include: { cliente: true, vendedor: true, entrega: { include: { motorista: true } }, itens: true },
     }),
   ]);
 
   return { page, perPage: take, total, totalPages: Math.ceil(total / take), data };
 }
+
+export async function atualizarVenda(vendaId: number, data: any) {
+  return prisma.$transaction(async (tx) => {
+    const venda = await tx.venda.findUnique({ where: { id: vendaId } });
+    if (!venda) throw new Error("Venda não encontrada.");
+
+    const novaDataVenda = data.dataVenda ? new Date(data.dataVenda) : venda.dataVenda;
+
+    const atualizado = await tx.venda.update({
+      where: { id: vendaId },
+      data: {
+        formaPagamento: data.formaPagamento ?? venda.formaPagamento,
+        desconto: data.desconto != null ? D(data.desconto) : venda.desconto,
+        observacao: data.observacao ?? venda.observacao,
+        status: data.status ?? venda.status, // se não vier do front, mantém
+        dataVenda: novaDataVenda,
+      },
+      include: { itens: true, cliente: true, vendedor: true, entrega: true },
+    });
+
+    await recalcularTotais(vendaId, tx);
+
+    return { venda: atualizado };
+  });
+}
+
 
 export async function gerarComprovante(vendaId: number) {
   const v = await prisma.venda.findUnique({
@@ -454,4 +539,6 @@ export async function gerarComprovante(vendaId: number) {
     formaPagamento: v.formaPagamento,
     status: v.status,
   };
+
+
 }

@@ -122,7 +122,7 @@ export async function atualizarProduto(id: string, data: AtualizarProdutoDTO) {
     where: { id: idNum },
     data: {
       nome: payload.nome ?? undefined,
-      tipo: payload.tipo ?? undefined,
+      tipo: payload.tipo !== undefined ? payload.tipo : undefined,
       preco: payload.preco != null ? new Prisma.Decimal(payload.preco as any) : undefined,
       estoqueAtual: payload.estoqueAtual != null ? Number(payload.estoqueAtual) : undefined,
       imageUrl: payload.imageUrl !== undefined ? payload.imageUrl : undefined,
