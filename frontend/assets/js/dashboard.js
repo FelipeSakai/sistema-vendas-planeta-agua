@@ -79,7 +79,6 @@
   const kpiPendentes = document.getElementById("kpiPendentes");
   const kpiVendasHoje = document.getElementById("kpiVendasHoje");
   const kpiFaturamentoHoje = document.getElementById("kpiFaturamentoHoje");
-  const kpiEntregasPendentes = document.getElementById("kpiEntregasPendentes");
   const badgePendentes = document.getElementById("badgePendentes");
   const badgeVendasHoje = document.getElementById("badgeVendasHoje");
 
