@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, Status } from "@prisma/client";
 import { prisma } from "../database/prisma";
 
 export type ListarProdutosFiltro = {
@@ -59,6 +59,7 @@ export async function criarProduto(data: CriarProdutoDTO) {
       preco: new Prisma.Decimal(payload.preco as any),
       estoqueAtual: Number(payload.estoqueAtual ?? 0),
       imageUrl: payload.imageUrl ?? null,
+      status: Status.ATIVO,                     // 👈 sempre nasce ATIVO
     },
   });
 
@@ -71,12 +72,16 @@ export async function listarProdutos(params: ListarProdutosParams) {
   const skip = (page - 1) * take;
 
   const where: any = {};
+
+  // 👇 Só lista produtos ATIVOS
+  where.status = Status.ATIVO;
+
   const termo = (params.geral ?? "").trim();
   if (termo) {
-    where.nome = { contains: termo, mode: "insensitive" }; // aceita "g"
+    where.nome = { contains: termo, mode: "insensitive" };
   }
   if (params.tipo) {
-    where.tipo = params.tipo; // se você tiver esse campo
+    where.tipo = params.tipo;
   }
 
   const [data, total] = await Promise.all([
@@ -97,6 +102,7 @@ export async function listarProdutos(params: ListarProdutosParams) {
     totalPages: Math.max(1, Math.ceil(total / take)),
   };
 }
+
 export async function buscarProdutoPorId(id: string) {
   const idNum = Number(id);
   if (!Number.isFinite(idNum)) { const e = new Error("ID inválido."); (e as any).status = 400; throw e; }
@@ -126,6 +132,7 @@ export async function atualizarProduto(id: string, data: AtualizarProdutoDTO) {
       preco: payload.preco != null ? new Prisma.Decimal(payload.preco as any) : undefined,
       estoqueAtual: payload.estoqueAtual != null ? Number(payload.estoqueAtual) : undefined,
       imageUrl: payload.imageUrl !== undefined ? payload.imageUrl : undefined,
+      // status: se quiser permitir reativar um dia, podemos tratar aqui depois
     },
   });
 
@@ -135,8 +142,17 @@ export async function atualizarProduto(id: string, data: AtualizarProdutoDTO) {
 export async function excluirProduto(id: string) {
   const idNum = Number(id);
   if (!Number.isFinite(idNum)) { const e = new Error("ID inválido."); (e as any).status = 400; throw e; }
-  await prisma.produto.delete({ where: { id: idNum } });
-  return { mensagem: "Produto excluído com sucesso" };
+
+  // ❌ NÃO DELETE MAIS
+  // await prisma.produto.delete({ where: { id: idNum } });
+
+  // ✅ SÓ INATIVA
+  await prisma.produto.update({
+    where: { id: idNum },
+    data: { status: Status.INATIVO },
+  });
+
+  return { mensagem: "Produto inativado com sucesso" };
 }
 
 export async function ajustarEstoque(id: string, delta: number) {
@@ -145,8 +161,15 @@ export async function ajustarEstoque(id: string, delta: number) {
   if (!Number.isFinite(delta) || delta === 0) { const e = new Error("Informe um delta numérico diferente de zero."); (e as any).status = 400; throw e; }
 
   return await prisma.$transaction(async (trx) => {
-    const atual = await trx.produto.findUnique({ where: { id: idNum }, select: { estoqueAtual: true } });
+    const atual = await trx.produto.findUnique({
+      where: { id: idNum },
+      select: { estoqueAtual: true, status: true },
+    });
     if (!atual) { const e = new Error("Produto não encontrado."); (e as any).status = 404; throw e; }
+
+    if (atual.status === Status.INATIVO) {
+      const e = new Error("Não é possível ajustar estoque de produto inativado."); (e as any).status = 400; throw e;
+    }
 
     const novo = atual.estoqueAtual + delta;
     if (novo < 0) { const e = new Error("Saída maior que o estoque disponível."); (e as any).status = 400; throw e; }
