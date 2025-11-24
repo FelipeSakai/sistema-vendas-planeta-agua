@@ -1,4 +1,4 @@
-// === Clientes.js (COMPLETO E FUNCIONANDO) ===
+// === Clientes.js (COMPLETO – COM CRIAR + EDITAR) ===
 (function () {
   const API_BASE = localStorage.getItem("API_BASE") || "";
   const getRawToken = () => localStorage.getItem("token") || "";
@@ -85,6 +85,8 @@
   const $tbody = $("table.table tbody");
   const $pagination = $(".pagination");
   const $logout = $(".sidebar-footer .nav-link");
+
+  const btnNovoCliente = $("#btnAddCliente");
 
   // modal view
   const $viewNome = $("#viewNomeCliente");
@@ -231,6 +233,41 @@
   }
 
   // ============================
+  // Limpar formulário (novo cliente)
+  // ============================
+  function limparFormularioCliente() {
+    $("#clienteModalLabel").textContent = "Novo Cliente";
+    $("#tipoCliente").value = "pessoa_fisica";  // ajuste conforme seu select
+    $("#statusCliente").value = "ativo";
+
+    $("#nomeCliente").value = "";
+    $("#cpfCliente").value = "";
+    $("#razaoSocialCliente").value = "";
+    $("#nomeFantasiaCliente").value = "";
+    $("#cnpjCliente").value = "";
+
+    $("#telefoneCliente").value = "";
+    $("#emailCliente").value = "";
+    $("#cepCliente").value = "";
+    $("#enderecoCliente").value = "";
+    $("#numeroCliente").value = "";
+    $("#complementoCliente").value = "";
+    $("#bairroCliente").value = "";
+    $("#cidadeCliente").value = "";
+    $("#estadoCliente").value = "";
+    $("#observacoesCliente").value = "";
+  }
+
+  // ============================
+  // Abrir "Novo Cliente"
+  // ============================
+  function abrirNovoCliente() {
+    state.currentEditId = null; // modo criação
+    limparFormularioCliente();
+    editModal.show();
+  }
+
+  // ============================
   // Abrir edição
   // ============================
   async function abrirEdicao(id) {
@@ -265,7 +302,7 @@
   }
 
   // ============================
-  // Salvar edição
+  // Salvar (criar ou editar) cliente
   // ============================
   async function salvarCliente() {
     const id = state.currentEditId;
@@ -279,32 +316,39 @@
       cpfCnpj: $("#cpfCliente").value.trim() || $("#cnpjCliente").value.trim(),
     };
 
+    // valida mínima
+    if (!payload.nome) {
+      Swal.fire("Atenção", "Nome do cliente é obrigatório.", "warning");
+      return;
+    }
+
     try {
-      // Botão de salvar desabilita
       const btn = $("#btnSalvarCliente");
       btn.disabled = true;
       btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Salvando...`;
 
-      await api("PUT", `/api/clientes/${id}`, payload);
+      if (id) {
+        // edição
+        await api("PUT", `/api/clientes/${id}`, payload);
+      } else {
+        // criação
+        await api("POST", `/api/clientes`, payload);
+      }
 
-      // Feedback bonito
       Swal.fire({
         icon: "success",
-        title: "Cliente atualizado!",
+        title: id ? "Cliente atualizado!" : "Cliente criado!",
         timer: 1400,
         showConfirmButton: false,
       });
 
-      // Fecha modal depois de 1s
       setTimeout(() => {
         editModal.hide();
       }, 300);
 
-      // Reload da tabela
       setTimeout(() => {
         loadClientes();
       }, 500);
-
     } catch (e) {
       Swal.fire("Erro", e.message || "Falha ao salvar cliente.", "error");
     } finally {
@@ -313,7 +357,6 @@
       btn.innerHTML = "Salvar";
     }
   }
-
 
   // ============================
   // Abrir delete
@@ -378,6 +421,11 @@
   });
 
   $("#btnSalvarCliente").addEventListener("click", salvarCliente);
+
+  // botão "Novo Cliente"
+  if (btnNovoCliente) {
+    btnNovoCliente.addEventListener("click", abrirNovoCliente);
+  }
 
   $logout.addEventListener("click", () => {
     localStorage.removeItem("token");
